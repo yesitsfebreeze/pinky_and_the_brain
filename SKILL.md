@@ -25,10 +25,10 @@ If versions match: continue with normal session lifecycle.
 
 Read configuration from {BRAIN_ROOT}/@brain:
   - Parse `main-brain-origin-source-url` from the HTML comment
-  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE, PRUNE_THRESHOLD, HIBERNATION_DAYS, MAX_CONTEXT_NOTES, MAX_CONTEXT_FILES, MAX_LINKED_REPOS, CONTEXT_DEPTH
+  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, PRUNE_THRESHOLD, MAX_CONTEXT_NOTES, MAX_CONTEXT_FILES, MAX_LINKED_REPOS, CONTEXT_DEPTH
   - If PATB_URL is set: override BRAIN_REPO_URL with its value
   - Apply FOLLOW/AVOID as session constraints
-  - Defaults if missing: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1, PRUNE_THRESHOLD=MIN_RATING, HIBERNATION_DAYS=90, MAX_CONTEXT_NOTES=8, MAX_CONTEXT_FILES=5, MAX_LINKED_REPOS=3, CONTEXT_DEPTH=2
+  - Defaults if missing: MAX_NOTES=64, MIN_RATING=30, PRUNE_THRESHOLD=MIN_RATING, MAX_CONTEXT_NOTES=8, MAX_CONTEXT_FILES=5, MAX_LINKED_REPOS=3, CONTEXT_DEPTH=2
 
 
 ## Resolve Identity
@@ -62,10 +62,10 @@ If working inside a .patb repo directly: use cwd as brain root, skip clone/pull
 
 Read {BRAIN_ROOT}/@brain:
   Parse `main-brain-origin-source-url` from the HTML comment
-  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE, PRUNE_THRESHOLD, HIBERNATION_DAYS, MAX_CONTEXT_NOTES, MAX_CONTEXT_FILES, MAX_LINKED_REPOS, CONTEXT_DEPTH
+  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, PRUNE_THRESHOLD, MAX_CONTEXT_NOTES, MAX_CONTEXT_FILES, MAX_LINKED_REPOS, CONTEXT_DEPTH
   If PATB_URL is set: override BRAIN_REPO_URL with its value
   Apply FOLLOW/AVOID as session constraints
-  Defaults: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1, PRUNE_THRESHOLD=MIN_RATING, HIBERNATION_DAYS=90, MAX_CONTEXT_NOTES=8, MAX_CONTEXT_FILES=5, MAX_LINKED_REPOS=3, CONTEXT_DEPTH=2
+  Defaults: MAX_NOTES=64, MIN_RATING=30, PRUNE_THRESHOLD=MIN_RATING, MAX_CONTEXT_NOTES=8, MAX_CONTEXT_FILES=5, MAX_LINKED_REPOS=3, CONTEXT_DEPTH=2
 
 If @brain is missing or invalid (empty, no origin comment, no YAML):
   Create/repair using canonical format:
@@ -85,9 +85,7 @@ AVOID:
   - {CONSTRAINT}
 MAX_NOTES: {N}
 MIN_RATING: {N}
-DECAY_RATE: {N}  # rating points lost per day since last_used (default: 1)
 PRUNE_THRESHOLD: {N}  # minimum rating to survive prune pass (default: same as MIN_RATING)
-HIBERNATION_DAYS: {N}  # freeze decay after this many days idle (default: 90, 0 = disabled)
 MAX_CONTEXT_NOTES: {N}  # max notes loaded into prompt (default: 8)
 MAX_CONTEXT_FILES: {N}  # max tree.md entries surfaced (default: 5)
 MAX_LINKED_REPOS: {N}   # max linked repos queried (default: 3)
@@ -115,15 +113,7 @@ If any memory file is missing (first sync / register):
   Write changes.md (empty)
   Write sync.md with current source head
 
-Decay pass (run after loading thoughts.md):
-  For each note with a valid `last_used` date:
-    Calculate `days_since = (today - last_used).days`
-    If HIBERNATION_DAYS > 0 and days_since > HIBERNATION_DAYS: skip decay (hibernation guard)
-    Apply `rating -= days_since * DECAY_RATE` (DECAY_RATE from @brain YAML, default 1)
-    Cap: if rating < 0, set rating = 0
-  Notes missing `last_used` (unknown): skip decay, leave rating unchanged
-
-Prune pass (run after decay pass):
+Prune pass (run after load):
   Collect all notes where `rating < PRUNE_THRESHOLD` (PRUNE_THRESHOLD from @brain YAML, default MIN_RATING)
   If any exist:
     Remove those notes from thoughts.md
@@ -138,18 +128,16 @@ git -C {BRAIN_ROOT} push
 ```
 
 Selection pass — startup path (run after prune pass; applies only when no explicit user query is active):
-  Decay and prune always operate on the FULL pool.
+  Prune always operates on the FULL pool.
   Only a ranked subset is loaded into the session context.
-  For each surviving note compute a relevance score:
-    relevance = rating
-    recency_bonus (based on last_used; treat unknown as no bonus):
-      if days_since_used <= 3:  relevance += 20
-      elif days_since_used <= 7: relevance += 10
-    repo_match_bonus:
-      if any of the note's sources exist as files under {SOURCE_ROOT}: relevance += 15
+  Relevance formula — used for both context selection and pool eviction:
+    relevance(note) =
+      rating
+      + recency_bonus: +20 if last_used ≤ 3 days ago, +10 if ≤ 7 days; 0 otherwise (unknown last_used = 0)
+      + repo_match_bonus: +15 if any of note's sources exist as files under {SOURCE_ROOT}
   Sort notes by relevance descending.
   Load the top MAX_CONTEXT_NOTES notes into session context (default: 8).
-  Notes not selected are not loaded into the prompt but remain in the pool for future decay/prune.
+  Notes not selected are not loaded into the prompt but remain in the pool for future prune.
   For explicit topic queries, the full pool is used instead — see Commands → "what do you know about X".
 
 
@@ -207,7 +195,7 @@ For each selected linked repo:
   Read changes.md — surface entries from last 7 days or since last pull
   If project is relevant to current session: sub-search thoughts.md
   If not relevant: skip to next
-  Surface at most 3 notes from that repo (highest rated, after in-memory decay)
+  Surface at most 3 notes from that repo (highest relevance(), see Load Memory → Selection pass)
   Surface useful cross-project context and recent changes
 
 
@@ -220,7 +208,7 @@ STARTUP PATH (session start, no active query):
   General relevance ranking; capped at MAX_CONTEXT_NOTES.
 
 QUERY PATH (explicit "what do you know about X"):
-  Searches and ranks the FULL surviving note pool (after decay + prune).
+  Searches and ranks the FULL surviving note pool (after prune).
   MAX_CONTEXT_NOTES applied as a cap after ranking (not during search).
   See command details below.
 
@@ -274,9 +262,10 @@ REMEMBER:
   2. Rate new note 0–100 based on usefulness
   3. If below MIN_RATING: inform user, don't store (unless they insist)
   4. If pool is at MAX_NOTES:
-     - Similar note with lower rating? → replace it (merge text, keep higher rating)
-     - New rating > lowest existing? → drop lowest
-     - New rating < all existing? → inform user, don't store (unless they insist)
+     - Similar note exists? → replace it (merge text, keep higher rating)
+     - Compute relevance() for all pool notes and the new note (see Load Memory → Selection pass)
+     - New note relevance > lowest existing relevance? → evict that note, insert new
+     - New note relevance ≤ all existing → inform user, don't store (unless they insist)
   5. Append or merge note with its rating
      - Set `created` to today's date (or preserve original on merge)
      - Set `last_used` to today's date
@@ -307,6 +296,29 @@ git -C {BRAIN_ROOT} add -A
 git -C {BRAIN_ROOT} diff --cached --quiet || git -C {BRAIN_ROOT} commit -m "pb: forget - {SUMMARY}"
 git -C {BRAIN_ROOT} push
 ```
+
+### "prune notes"
+
+PRUNE:
+  1. Load the full note pool from {BRAIN_ROOT}/thoughts.md
+  2. Identify all notes where `rating < PRUNE_THRESHOLD`
+  3. If none: report "Pool is clean — no notes below threshold (PRUNE_THRESHOLD={N}). {count} notes remain."
+  4. If any exist:
+     List notes to be removed (title + rating each), ask for confirmation
+     If confirmed:
+       Remove pruned notes from thoughts.md
+       Re-sort remaining notes by rating (highest first)
+       Append to {BRAIN_ROOT}/changes.md: `#### {DATE} — pruned {N} stale notes (manual)`
+       Commit and push:
+
+```
+git -C {BRAIN_ROOT} pull --rebase
+git -C {BRAIN_ROOT} add -A
+git -C {BRAIN_ROOT} commit -m "pb: prune {N} stale notes"
+git -C {BRAIN_ROOT} push
+```
+
+       Report: "Pruned {N} notes. Pool now has {remaining} notes."
 
 
 ## After Reasoning
@@ -389,9 +401,10 @@ Each note format:
 Backward compatibility: notes missing `created` or `last_used` are treated as `created: unknown`, `last_used: unknown`. Notes missing `sources` have no source context. Notes missing `concepts` have no tags and work normally.
 
 Pool is sorted by rating, highest first.
-When full: new note must outrank an existing one to enter.
-Similar note exists at lower rating → merge & replace.
-No room + not better than worst → reject (inform user).
+When full: compute relevance() for all pool notes and the new note (see Load Memory → Selection pass).
+  Similar note exists? → merge & replace (keep higher rating of the two).
+  New note relevance > lowest existing relevance? → evict that note, insert new.
+  New note relevance ≤ all existing → reject (inform user).
 
 Score adjustments — apply these rating changes when the event occurs:
   `used in reasoning` → +30 (note was referenced to answer a query)
@@ -416,7 +429,7 @@ Adjusted ratings are clamped to 0–100. Notes that drop below MIN_RATING are re
     - {CONSTRAINT}
   MAX_NOTES: {N}
   MIN_RATING: {N}
-  DECAY_RATE: {N}
+  PRUNE_THRESHOLD: {N}
   ```
 
 {SOURCE_ROOT}/@pinky:
