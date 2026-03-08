@@ -153,3 +153,23 @@ For explicit queries (`"what do you know about X"`) the full pool is searched in
 | `MAX_CONTEXT_NOTES` | `8` | Max notes loaded into a session prompt |
 | `MAX_CONTEXT_FILES` | `5` | Max `tree.md` entries surfaced per session |
 | `MAX_LINKED_REPOS` | `3` | Max linked brain repos queried per session |
+
+## Concept Graph
+
+Every note can carry 1–3 concept tags in its `concepts` field (see `thoughts.md` format above). Tags are assigned automatically when a note is stored via `remember` or created during catch-up indexing after a source push.
+
+All tags are aggregated into `concepts.md` (auto-generated — never edit manually):
+
+**concepts.md**
+```
+#### {concept-tag}
+<!-- related: tag1, tag2 -->   ← other tags that co-occur with this one
+<!-- files: src/foo.ts -->      ← union of sources across all notes with this tag
+<!-- repos: other-project -->   ← only present when tag appears in a linked repo
+```
+
+When you query `"what do you know about X"`, the skill does a concept-match pass before scoring notes by text: it finds every tag matching X, then walks the `related` links up to `CONTEXT_DEPTH` hops. Notes tagged with any matched concept receive a topic-score bonus and appear in results even when the literal query text is absent from their body.
+
+| Config key | Default | Effect |
+|---|---|---|
+| `CONTEXT_DEPTH` | `2` | Maximum concept-link hops during query expansion |

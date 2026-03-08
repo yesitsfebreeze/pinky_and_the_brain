@@ -41,9 +41,6 @@ Not yet implemented:
 
 ## Phase 4 — Integration & Docs
 
-### 4.3 README.md updates
-- [ ] Add concept graph section once Phase 3 ships
-
 ### 4.4 Version bumps
 - [ ] Bump skill.version after each phase ships
 - [ ] Bump install.version if SETUP.md changes
