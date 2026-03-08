@@ -220,28 +220,45 @@ STARTUP PATH (session start, no active query):
   General relevance ranking; capped at MAX_CONTEXT_NOTES.
 
 QUERY PATH (explicit "what do you know about X"):
-  Bypasses the MAX_CONTEXT_NOTES cap.
   Searches and ranks the FULL surviving note pool (after decay + prune).
+  MAX_CONTEXT_NOTES applied as a cap after ranking (not during search).
   See command details below.
 
 ---
 
 ### "what do you know about X"
 
-QUERY PATH — full-pool topic-filtered search (overrides startup selection cap):
-  1. Read {BRAIN_ROOT}/@brain and the FULL thoughts.md pool — do NOT apply MAX_CONTEXT_NOTES.
-  2. Score each note for topic relevance:
+QUERY PATH — full-pool concept-aware topic search:
+  1. Read {BRAIN_ROOT}/@brain, the FULL thoughts.md pool, and concepts.md.
+     Do NOT apply MAX_CONTEXT_NOTES during scoring — apply after ranking (step 6).
+  2. Concept match pass (runs before text scoring):
+       matched_concepts = {} (concept tag → hop depth)
+       For each concept in concepts.md:
+         if concept tag matches X (substring / fuzzy): add to matched_concepts at depth 0
+       BFS expansion up to CONTEXT_DEPTH hops:
+         While frontier non-empty and depth < CONTEXT_DEPTH:
+           For each concept in frontier:
+             Read its `related` field from concepts.md
+             For each related tag not yet in matched_concepts: add at current depth + 1
+       concept_match = matched_concepts is non-empty
+  3. Score each note for topic relevance:
        topic_score = 0
+       if concept_match:
+         for each concept tag in note's `concepts` field:
+           if tag in matched_concepts: topic_score += max(10, 40 - matched_concepts[tag] * 10)
        if note title or body matches X (substring / fuzzy): topic_score += 40
        if note sources match files related to X:            topic_score += 20
        combined = rating + topic_score
-  3. Sort by combined score descending.
-     Surface all notes with topic_score > 0; omit notes with zero topic match.
-     If no topic match found: fall back to startup-path ranking (top MAX_CONTEXT_NOTES by general relevance).
-  4. For each linked .patb in @pinky:
+  4. Sort by combined score descending.
+     If concept_match: surface notes with topic_score > 0 (concept or text hits).
+     If no concept_match: surface notes with title/body/source text match only.
+     If no match at all: fall back to startup-path ranking (top MAX_CONTEXT_NOTES).
+  5. For each linked .patb in @pinky:
      Read @brain — skip if project not relevant to query.
-     If relevant: sub-search that repo's FULL thoughts.md pool using the same topic scoring.
-  5. Present findings concisely — cite which brain repo each came from.
+     If relevant: sub-search that repo's FULL thoughts.md and concepts.md using the same scoring.
+  6. Cap total surfaced notes at MAX_CONTEXT_NOTES (ranked by combined score, across all repos).
+  7. Present findings concisely — cite which brain repo each came from.
+     If concepts were matched: list matched concept tags and hop depth per tag.
 
 ### "list brain contents"
 

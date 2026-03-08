@@ -30,15 +30,6 @@ Not yet implemented:
 **Risk: High.** New file structures, new indexing, new query paths.
 **Depends on:** Phase 1 (metadata) and Phase 2 (selection) being stable.
 
-### 3.4 Concept-aware queries
-- [ ] Enhance "what do you know about X":
-  1. Match X against concept names in concepts.md
-  2. Follow `related` links up to `CONTEXT_DEPTH` hops
-  3. Pull notes tagged with matched concepts
-  4. Rank by score + relevance
-  5. Fall back to text search if no concept match
-- [ ] Integrate with Phase 2 selection limits
-
 ### 3.5 Full directory structure — deferred
 - [ ] Only pursue if 3.1–3.4 prove tags insufficient after ≥2 weeks of use
 - [ ] Would add: `concepts/`, `links/`, `projects/` directories
