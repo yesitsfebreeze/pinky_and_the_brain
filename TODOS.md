@@ -20,9 +20,9 @@ Already implemented in SKILL.md:
 - Structured concept relationships: direct note-to-note `related-notes` links; suggested on `remember`; cascade-included in query results
 - Selective context loading: relevance-ranked, capped by `MAX_CONTEXT_NOTES` and `MAX_CONTEXT_FILES`
 - Dual context loading paths: startup (top-N) vs query-time (full pool scan)
+- Context Assembly section: explicit prompt assembly rules with configurable limits (MAX_CONTEXT_NOTES, MAX_CONTEXT_FILES, MAX_LINKED_REPOS)
 
-Not yet implemented:
-- Configurable context limits for prompt assembly
+Not yet implemented: nothing in phases 1–3.
 
 ---
 
@@ -48,7 +48,7 @@ Phase 1 (Lifecycle)  ✓ complete
   ↓
 Phase 2 (Assembler)  ✓ complete
   ↓
-Phase 3 (Graph)      ✓ complete (3.1–3.3 + related-notes; 3.5 deferred)
+Phase 3 (Graph)      ✓ complete (3.1–3.4 + related-notes; 3.5 deferred)
   ↓
 Phase 4 (Docs)       ← current phase
 ```

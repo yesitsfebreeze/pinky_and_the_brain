@@ -204,6 +204,26 @@ For each selected linked repo:
   Surface useful cross-project context and recent changes
 
 
+## Context Assembly
+
+After completing Load Memory and Cross-Project Context passes, assemble the selected data into session context:
+
+1. **Notes block** — all selected notes, up to MAX_CONTEXT_NOTES total (local + cross-project combined):
+   For each note: include title, body, rating, and concepts tags; omit sources and related-notes lines.
+   Group: local repo notes first, cross-project notes after (labeled with brain repo slug).
+
+2. **File tree** — selected tree.md rows, up to MAX_CONTEXT_FILES:
+   Present as a compact table with columns: File | Impact | Notes. Omit Access Rate and Line Count.
+
+3. **Recent cross-project changes** — surface changes.md entries from the last 7 days for each selected linked repo:
+   Present as a bulleted list, one line per entry, labeled with repo slug.
+
+Context size limits (sourced from @brain YAML; enforce silently by truncating lower-ranked items):
+  MAX_CONTEXT_NOTES   — hard cap: total notes in session (locals + all cross-project combined)
+  MAX_CONTEXT_FILES   — hard cap: tree.md rows surfaced
+  MAX_LINKED_REPOS    — hard cap: linked repos queried
+
+
 ## Commands
 
 ### Context loading — two paths
