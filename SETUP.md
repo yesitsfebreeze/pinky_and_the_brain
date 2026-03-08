@@ -1,14 +1,29 @@
-# Pinky & The Brain — Installer
+# Pinky & The Brain — Install or Update
 
-This file is fetched and executed by the README.
-Configuration variables come from the README's configuration table.
+This file handles both fresh installs and updates in a single flow.
+Fetched and executed by the README, by the skill version check,
+or manually via the @ressurect paste block.
+Configuration variables come from the README's configuration table (fresh install)
+or from the existing @brain file (update / ressurect).
 
 
 ## Pre-flight
 
-Check: does @pinky exist at the workspace root?
-If YES: stop — already installed. Offer to re-run installation to update.
-If NO: continue with installation.
+Determine run mode:
+
+  **INSTALL** — @pinky does NOT exist at workspace root.
+    Fresh setup. All artifacts will be created from scratch.
+
+  **UPDATE** — @pinky EXISTS at workspace root (or RESSURECT = TRUE).
+    Existing setup. Read every existing artifact fully before modifying.
+    Preserve all user content (thoughts.md, changes.md, tree.md, sync.md, @pinky linked repos).
+    Overwrite infrastructure (skill, instructions, @brain structure — merging user YAML values).
+
+In UPDATE mode:
+  1. Read {SOURCE_ROOT}/@pinky → extract repo URL (line 1), linked repos (lines 2+)
+  2. Read {BRAIN_ROOT}/@brain → extract title, description, YAML config
+  3. Read {BRAIN_ROOT}/thoughts.md, tree.md, changes.md, sync.md → keep in memory
+  4. Use extracted values as configuration (do NOT require the README config block)
 
 If DRY_RUN is set to TRUE:
   Simulate every step. Do not write, delete, or modify any files.
@@ -72,7 +87,7 @@ If clone fails (remote doesn't exist):
 
 ## @brain
 
-Write {BRAIN_ROOT}/@brain:
+**INSTALL mode** — Write {BRAIN_ROOT}/@brain:
 
 ````
 <!-- main-brain-origin-source-url: {REPO_URL} -->
@@ -97,14 +112,24 @@ Rules:
   - If file exists + valid: preserve user content, only fill missing fields.
   - If file exists but empty/invalid: overwrite.
 
+**UPDATE mode** — Read existing @brain fully, then:
+  - Preserve: user-edited title and description
+  - Preserve: user-edited YAML values (MAX_NOTES, MIN_RATING, FOLLOW, AVOID)
+  - Update: any new required fields the template introduces (merge with defaults)
+  - If file is missing or invalid: recreate using canonical format above
+
 
 ## @pinky
 
-Create {SOURCE_ROOT}/@pinky:
-  Line 1: Current repo URL from configuration table
-  Lines 2+: empty (user adds linked repos later)
-Skip if @pinky already exists.
-Skip if URL still contains {USER} or {REPO} placeholders.
+**INSTALL mode:**
+  Create {SOURCE_ROOT}/@pinky:
+    Line 1: Current repo URL from configuration table
+    Lines 2+: empty (user adds linked repos later)
+  Skip if URL still contains {USER} or {REPO} placeholders.
+
+**UPDATE mode:**
+  Do NOT overwrite — only verify line 1 has a valid URL.
+  Preserve all linked repo URLs on lines 2+.
 
 
 ## Always-Active Instructions
@@ -152,7 +177,7 @@ Runtime: invoke skill for remember/forget/query/list
 
 ## Memory Init
 
-Create starter files if they don't exist yet:
+Create starter files if they don't exist yet (both modes — never overwrite existing):
 
 {BRAIN_ROOT}/thoughts.md:
 ```
@@ -181,6 +206,43 @@ INDEXED_AT: {NOW_ISO8601}
 ```
 
 
+## Index Codebase
+
+Scan the source repository and populate/update the brain:
+
+1. Walk {SOURCE_ROOT} file tree (respect .gitignore)
+2. Update {BRAIN_ROOT}/tree.md:
+   - Add new files not yet listed
+   - Remove files that no longer exist
+   - Update line counts
+   - Estimate Access Rate and Impact ratings (1–10) based on file type, location, and size
+
+3. Update {BRAIN_ROOT}/@brain description:
+   - Summarize the project's purpose from README, package.json, or similar
+   - Keep it to 1–2 sentences
+
+4. If this is an UPDATE and {BRAIN_ROOT}/sync.md has an indexed hash:
+   - Index all commits since the last indexed hash
+   - Extract decisions, pitfalls, conventions, integration-impacting changes
+   - Merge into thoughts.md using rating/threshold/cap rules
+   - Append cross-project-relevant changes to changes.md (cap 20, newest first)
+   - Update sync.md with new hash + timestamp
+
+5. If this is a fresh INSTALL:
+   - Index recent commits (last 50 or last 30 days, whichever is smaller)
+   - Extract noteworthy decisions and conventions into thoughts.md
+   - Update sync.md with current head hash + timestamp
+
+
+## Commit & Push
+
+```
+git -C {BRAIN_ROOT} add -A
+git -C {BRAIN_ROOT} diff --cached --quiet || git -C {BRAIN_ROOT} commit -m "pb: {install|update} - {SLUG}"
+git -C {BRAIN_ROOT} push
+```
+
+
 ## Store Versions
 
 Fetch the current version files from remote:
@@ -198,6 +260,8 @@ These are compared during session start to detect when an update is available.
 
 ## Cleanup
 
-Delete this installer file from disk.
+Delete this installer file from disk (if it was written as a temp file).
 If content was pasted as a chat message (no backing file): skip this step.
-Installation complete.
+If RESSURECT = TRUE: inform user "Resurrect complete — p&b re-installed from latest main."
+If UPDATE mode: inform user "Updated to {NEW_VERSION}. Changed: {LIST_OF_UPDATED_ARTIFACTS}."
+If INSTALL mode: inform user "Installation complete."

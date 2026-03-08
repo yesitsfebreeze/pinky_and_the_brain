@@ -15,7 +15,8 @@ Compare line 2 (timestamp) of each against the local copies:
 If either local file is missing: treat as outdated.
 If any remote timestamp is newer than local:
   Inform the user: "p&b update available ({COMPONENT} {LOCAL_VERSION} → {REMOTE_VERSION})."
-  Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/UPDATE.md
+  Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
+  (This runs in UPDATE mode automatically since @pinky already exists.)
 
 If versions match: continue with normal session lifecycle.
 

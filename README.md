@@ -56,7 +56,22 @@ MIN_RATING: 30
 # ]
 ```
 
-Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/INSTALL.md
+Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
+
+## Resurrect
+
+If a project's p&b setup is broken or too far behind to self-update
+(e.g. missing update mechanism, corrupted skill, desynced branch),
+paste this into an AI chat to force a full re-install from latest main:
+
+```
+RESSURECT = TRUE
+Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
+
+This is a ressurect/re-install over the existing setup.
+Preserve all user content: thoughts.md, changes.md, tree.md, sync.md, @pinky linked repos.
+Overwrite everything else (skill, instructions, @brain structure).
+```
 
 ## Commands
 
