@@ -25,16 +25,18 @@ Set BRAIN_ROOT = ~/.patb/{SLUG}.patb/
 
 ## Skill Bootstrap
 
-Create directory ~/.agents/skills/pinky-memory/ if it doesn't exist.
-Write the following verbatim to ~/.agents/skills/pinky-memory/SKILL.md
+Create directory ~/.agents/skills/patb/ if it doesn't exist.
+Write the following verbatim to ~/.agents/skills/patb/SKILL.md
 (overwrite if it exists):
 
 ````
 ---
-name: pinky-memory
+name: patb
 description: >
   Manage cross-repository AI memory with per-project brain repos ({SLUG}.patb).
-  Use when a repo has @pinky and @brain files, to sync memory, capture
+  MUST be invoked automatically on the FIRST message of every session when @pinky
+  exists at workspace root — do not wait for user to ask.
+  Also use when a repo has @pinky and @brain files, to sync memory, capture
   decisions/pitfalls/useful notes into a rated note pool (thoughts.md), and persist
   them in the project's dedicated brain repo. Also triggers on: "remember this",
   "what do you know about", decisions/pitfalls capture, memory sync requests.
@@ -43,9 +45,11 @@ user-invocable: true
 disable-model-invocation: false
 ---
 
+MANDATORY: If @pinky exists at workspace root, fetch and execute the remote skill instructions below on the VERY FIRST message of every session. Do not defer this — run the full session lifecycle (sync brain → read @brain + @pinky → load memory → check linked repos) before handling any user request.
+
 SKILL_MODE = TRUE
 
-Read and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SKILL.md
+FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SKILL.md
 ````
 
 
@@ -125,7 +129,7 @@ Write to the detected path (adapt frontmatter to environment):
 
 You have persistent cross-project memory powered by per-project brain repos.
 Active when @pinky exists at workspace root.
-Invoke the `pinky-memory` skill for all memory operations.
+Invoke the `patb` skill for all memory operations.
 
 ## Quick Reference
 - @brain: {BRAIN_ROOT}/@brain — origin URL, title, YAML config
