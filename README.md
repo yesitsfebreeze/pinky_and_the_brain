@@ -27,6 +27,7 @@ Each project gets a companion `.patb` brain repo that stores AI memory — decis
 ```
 ┌ my-project/ 
 ├── @pinky
+├── @plan
 └── **/*.*
 ```
 automatic ai sync into:
@@ -103,10 +104,17 @@ Description
 ```
 
 
-**@pinky** — at source repo root
+**{SOURCE_ROOT}/@pinky**
 ```
 Line 1: brain repo URL ({SLUG}.patb)
 Lines 2+: linked brain repo URLs
+```
+
+**{SOURCE_ROOT}/@plan**
+```
+Freeform ideas/notes (above the thick separator ████)
+████████████████████
+AI-generated todos (below the separator — managed by @ply)
 ```
 
 **thoughts.md** — rated note pool (highest first)
