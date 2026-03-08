@@ -1,3 +1,20 @@
+---
+SKILL_URL:         https://github.com/yesitsfebreeze/pinky-and-the-brain/SKILL.md
+REPO_URL:          https://github.com/{USER}/{REPO}  # can be inferred from `git remote get-url origin`
+PATB_URL:          https://github.com/{USER}/{REPO}.patb  # optional — partial override; {USER} and {REPO} fall back to REPO_URL values (e.g. different user, same name: https://github.com/other-user/{REPO}.patb)
+MAX_NOTES:         512
+MIN_RATING:        300
+PRUNE_THRESHOLD:   300   # minimum rating to survive a prune pass (default: same as MIN_RATING)
+MAX_CONTEXT_NOTES: 8     # max notes loaded into prompt per session
+MAX_CONTEXT_FILES: 5     # max tree.md entries surfaced per session
+MAX_LINKED_REPOS:  3     # max linked brain repos queried per session
+CONTEXT_DEPTH:     2     # max concept-link hops during query expansion
+# avoid:
+#   - "store unrelated data"
+# follow:
+#   - "generate todos for ideas display them to the user when he types @todo"
+---
+
 # 🧠 Pinky & The Brain
 
 Persistent cross-project AI memory for AI coding assistants.
@@ -29,35 +46,16 @@ automatic ai sync into:
 1. Paste this file into an AI chat
 
 If the workspace has a git remote, `REPO_URL` is inferred automatically via `git remote get-url origin`.
-Otherwise, fill in `REPO_URL` in the config below before pasting.
+Otherwise, fill in `REPO_URL` in the frontmatter above before pasting.
 If the `.patb` brain repo doesn't exist on your remote yet, the AI will ask if you want to create and push it.
 The AI will fetch the installer and set everything up automatically.
+
+Read the frontmatter config at the top of this file. If any required field still contains a
+{PLACEHOLDER}, stop and ask the user to fill it in before continuing.
 
 <!-- Uncomment for dry run:
 DRY_RUN = TRUE
 -->
-
-## Configuration
-
-Read this configuration. If any required field still contains a
-{PLACEHOLDER}, stop and ask the user to fill it in before continuing.
-
-```yaml
-SKILL_URL:         https://github.com/yesitsfebreeze/pinky-and-the-brain/SKILL.md
-REPO_URL:          https://github.com/{USER}/{REPO}  # can be inferred from `git remote get-url origin`
-# PATB_URL:        https://github.com/{USER}/{REPO}.patb  # optional — override brain repo URL when it differs from {REPO_URL}.patb
-MAX_NOTES:         512
-MIN_RATING:        300
-PRUNE_THRESHOLD:   300   # minimum rating to survive a prune pass (default: same as MIN_RATING)
-MAX_CONTEXT_NOTES: 8     # max notes loaded into prompt per session
-MAX_CONTEXT_FILES: 5     # max tree.md entries surfaced per session
-MAX_LINKED_REPOS:  3     # max linked brain repos queried per session
-CONTEXT_DEPTH:     2     # max concept-link hops during query expansion
-# avoid:
-#   - "store unrelated data"
-# follow:
-#   - "generate todos for ideas display them to the user when he types @todo"
-```
 
 Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
 
@@ -92,18 +90,15 @@ All memory files live in `{BRAIN_ROOT}` (`~/.patb/{SLUG}.patb/`):
 
 **@brain** — project identity + config
 ```
+---
+Each setting from the yaml configuration
+---
+
 <!-- main-brain-origin-source-url: {URL} -->
 # Title
 Description
 ```
-```yaml
-SKILL_URL: ...
-PATB_URL: ...   # optional — only present when brain repo URL differs from {REPO_URL}.patb
-MAX_NOTES: 64
-MIN_RATING: 300
-FOLLOW: [...]
-AVOID: [...]
-```
+
 
 **@pinky** — at source repo root
 ```
