@@ -41,11 +41,6 @@ Not yet implemented:
 
 ## Phase 4 — Integration & Docs
 
-### 4.4 Version bumps
-- [ ] Tag releases in p&b repo
-
----
-
 ## Sequencing
 
 ```
