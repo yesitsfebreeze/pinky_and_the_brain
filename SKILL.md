@@ -1,6 +1,6 @@
 ---
 name: pinky-memory
-description: 'Manage cross-repository AI memory with an @pinky file. Use when a repo has an @pinky file, to sync memory, capture decisions/pitfalls/useful notes per file, and persist summaries inside the brain repo under .brain/{slug}/{language}/... with commits. Also triggers on: "remember this", "what do you know about", decisions/pitfalls capture, memory sync requests.'
+description: 'Manage cross-repository AI memory with per-project brain repos ({slug}.brain). Use when a repo has an @pinky file, to sync memory, capture decisions/pitfalls/useful notes per file, and persist them in the project''s dedicated brain repo. Also triggers on: "remember this", "what do you know about", decisions/pitfalls capture, memory sync requests.'
 argument-hint: 'Optional: focus area or file path (e.g. "auth refactor" or "src/main.ts")'
 user-invocable: true
 disable-model-invocation: false
@@ -8,41 +8,49 @@ disable-model-invocation: false
 
 # Pinky Memory
 
-## Architecture: Three Responsibilities
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  AI (this skill)         │  GitHub Actions (brain repo)     │
-├──────────────────────────┼──────────────────────────────────┤
-│  READ  at session start  │  REBUILD index.md on every push  │
-│  WRITE at session end    │  runs autonomously, no AI needed │
-│  PUSH  always            │                                  │
-└──────────────────────────┴──────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────┐
+│  Each project gets its own {slug}.brain git repo                  │
+│                                                                    │
+│  my-project/                    my-project.brain/                  │
+│    @pinky  ──────────────────►    meta.md                          │
+│    src/                           notes.md                         │
+│    ...                            typescript/                      │
+│                                     src/main.ts.md                 │
+│                                     src/auth.ts.md                 │
+│                                                                    │
+│  pinky-and-the-brain/           (skill hub — no brain data)        │
+│    SKILL.md                                                        │
+│    brain.agent.md                                                  │
+│    pinky.agent.md                                                  │
+│    scripts/                                                        │
+└────────────────────────────────────────────────────────────────────┘
 ```
 
-- **AI reads** `.brain/` at the start of every conversation to load memory context
-- **AI writes** per-file notes and pushes at the **end of every conversation** — this is mandatory and automatic, not user-triggered
-- **GitHub Actions** rebuilds `.brain/index.md` on every push to the brain repo — the AI never manually maintains the index
+- **One brain repo per project**: each project's memory lives in a dedicated `{slug}.brain` git repo
+- **AI reads** the brain repo at session start to load memory context
+- **AI writes** per-file notes and pushes at the **end of every conversation** — mandatory and automatic
+- **Cross-project context** via `@links` in `@pinky` — the AI reads linked brain repos for related knowledge
 - The brain grows passively: every project conversation adds to it without any extra effort
 
 ## What This Skill Does
-This skill implements a shared-brain memory workflow:
-- A **brain repo** (`pinky-and-the-brain`) stores all project memory under `.brain/{slug}/`
-- A **local clone** of the brain repo lives at `~/.pinky/`
-- Each project has an `@pinky` marker file at its root pointing to the brain
-
-When line 1 and line 2 of `@pinky` are the same URL, this repo **is** the brain repo — no separate clone is needed; the working directory is used directly.
+This skill implements a distributed-brain memory workflow:
+- Each project has a **dedicated brain repo** (`{slug}.brain`) storing all its memory
+- **Local clones** of brain repos live under `~/.pinky/{slug}.brain/`
+- Each project has an `@pinky` marker file at its root pointing to its brain repo
+- The **skill hub** (`pinky-and-the-brain`) distributes this skill and the agents — it stores no brain data itself
 
 It handles:
-1. **[START]** Discover `@pinky`, sync brain, load memory context
-2. **[START]** Search all project memory before answering anything
+1. **[START]** Discover `@pinky`, sync brain repo, load memory context
+2. **[START]** Read linked brain repos for cross-project context
 3. **[END]** Write per-file notes for everything touched this session
-4. **[END]** Update `@pinky` touched files list
-5. **[END]** Commit and push — triggers GitHub Actions to rebuild index
+4. **[END]** Commit and push to the brain repo
 
 ## MANDATORY: This Runs Every Conversation
 
-> **The memory write phase (steps 6–9) MUST execute at the end of every conversation
+> **The memory write phase MUST execute at the end of every conversation
 > where `@pinky` is present. It is not optional. It is not user-triggered.
 > It does not require the user to say "remember this".
 > The AI must do it automatically before ending the session.**
@@ -58,80 +66,81 @@ This skill activates automatically when:
 ## `@pinky` File Format
 
 ```
-https://github.com/yesitsfebreeze/pinky-and-the-brain   ← line 1: brain repo URL (required)
-https://github.com/{user}/{source-repo}                  ← line 2: source repo URL (required)
-                                                          ← if line 1 == line 2, this IS the brain repo
-
-# interesting
-https://github.com/some/related-lib                      ← repos AI should search for context
-https://github.com/another/reference                     ← AI auto-appends here as it discovers relevant repos
-
-# files
-src/main.ts                                              ← touched files ranked by importance (AI-maintained)
-src/auth.ts
+https://github.com/{user}/{slug}.brain           ← line 1: brain repo URL (required)
+                                                   ← must be a dedicated {slug}.brain repo
+@links
+https://github.com/{user}/other-project.brain    ← other brain repos to cross-reference
+https://github.com/{user}/some-lib               ← interesting related repos
 ```
 
 Rules:
-- Line 1 must be a valid git URL (the brain repo)
-- Line 2 must be this repo's git origin URL
-- If line 1 == line 2: this repo is the brain — work in the current directory, no clone needed
-- `# interesting`: one URL per line; AI appends newly discovered related repos automatically
-- `# files`: one relative path per line, ordered by importance; AI rewrites after each sync
+- Line 1 must be a valid git URL pointing to this project's `.brain` repo
+- `@links`: one URL per line; AI appends newly discovered related repos automatically
+- Source repo URL is derived from `git remote get-url origin` (not stored in `@pinky`)
+- The skill hub URL (`pinky-and-the-brain`) is never line 1 — it doesn't store brain data
 
 ## Required Conventions
 1. Marker file is exactly `@pinky` at repo root
-2. When line 1 ≠ line 2: brain repo is always cloned/kept at `~/.pinky/`
-3. When line 1 == line 2: use the current working directory as the brain root
-4. All memory data lives under `.brain/` inside the brain repo
+2. Brain repos follow the naming convention `{slug}.brain`
+3. Brain repos are cloned to `~/.pinky/{slug}.brain/`
+4. Memory data lives at the **root** of the brain repo (no `.brain/` subdirectory)
 5. Never store secrets, credentials, tokens, or sensitive personal data
+
+## Brain Repo Structure
+
+Each `{slug}.brain` repository has this flat structure at its root:
+
+```
+meta.md                           ← project metadata, purpose, URLs
+notes.md                          ← general project notes (date-grouped)
+{language}/                       ← per-file notes grouped by language
+  {path/to/file}.md              ← decisions, pitfalls, useful facts
+```
+
+No slug subdirectories — the repo itself IS the project's brain.
 
 ## Procedure
 
 ### 1) Discover Context
 1. Find repo root and locate `@pinky`
-2. Read line 1 (brain URL) and line 2 (source URL)
-3. Parse `# interesting` section (list of repo URLs)
-4. Parse `# files` section (list of touched file paths)
-5. Validate line 1 is a git URL
-
-**Self-referential case**: if line 1 == line 2 (normalized, strip `.git` suffix):
-- This repo is the brain. Set brain root = current working directory.
-- Skip steps 2 (sync) entirely — already local.
-- Slug is derived from line 2 as normal.
+2. Read line 1 (brain repo URL)
+3. Derive source repo URL from `git remote get-url origin`
+4. Parse `@links` section (list of repo URLs)
+5. Validate line 1 is a valid git URL ending in `.brain` (or `.brain.git`)
 
 If `@pinky` is missing:
-1. Create `@pinky` with line 1 as brain URL (ask user if unknown)
-2. Fill line 2 with `git remote get-url origin`
-3. Leave `# interesting` and `# files` sections empty
+1. Derive slug from `git remote get-url origin`
+2. Construct brain URL: same owner/host, repo name = `{slug}.brain`
+3. Create `@pinky` with the brain URL on line 1
+4. Leave `@links` section empty
 
 If line 1 is invalid or empty: stop and ask for a valid brain repo URL.
 
 ### 2) Sync Brain Repository
-*Skip this step entirely if line 1 == line 2 (self-referential brain repo).*
+1. Derive `{slug}` from the brain repo URL (strip `.brain` and `.git` suffixes from last path segment)
+2. Set clone path: `~/.pinky/{slug}.brain/`
+3. If `~/.pinky/{slug}.brain/.git` does not exist:
+   - `git clone <line-1> ~/.pinky/{slug}.brain/`
+4. If it exists: verify remote URL matches line 1
+5. `git -C ~/.pinky/{slug}.brain/ pull`
 
-1. Ensure `~/.pinky/` exists
-2. If `~/.pinky/.git` does not exist:
-   - `git clone <line-1> ~/.pinky/`
-   - Install the hook: `git -C ~/.pinky config core.hooksPath .githooks`
-   - The `.githooks/post-merge` script is versioned in the brain repo — this activates it
-3. If `~/.pinky/.git` exists: verify remote URL matches line 1
-4. `git -C ~/.pinky pull` — if new commits were merged, `post-merge` fires automatically and writes `~/.pinky/.brain/.needs-reindex`
+If remote mismatch: ask whether to switch remote or reclone.
 
-If remote mismatch: ask whether to switch remote or use alternate directory.
-
-**Self-referential brain repo:** the hook is already active via the repo's own `.githooks/` folder (run `git config core.hooksPath .githooks` once in the repo root if not already set).
+**When working inside the brain repo itself** (current directory is a `.brain` repo):
+- Use the current working directory as the brain root
+- Skip clone/pull — already local
 
 ### 3) Derive Project Slug
-1. Extract last path segment from line 2 (source URL), strip `.git` suffix
-   - `https://github.com/user/my-project.git` → `my-project`
-   - `git@github.com:user/my-project.git` → `my-project`
+1. Extract last path segment from brain repo URL, strip `.brain` and `.git` suffixes
+   - `https://github.com/user/my-project.brain` → `my-project`
+   - `git@github.com:user/zilo.brain.git` → `zilo`
 2. Sanitize: lowercase, replace non-alphanumeric (except `-_`) with `-`
-3. All brain files for this project: `{brain_root}/.brain/{slug}/`
+3. Brain root: `~/.pinky/{slug}.brain/`
 
 ### 4) Register Project (first sync only)
-If `{brain_root}/.brain/{slug}/meta.md` does not exist:
+If `{brain_root}/meta.md` does not exist:
 1. Infer project purpose by reading: `README.md`, top-level config files, entry point files
-2. Write `{brain_root}/.brain/{slug}/meta.md`:
+2. Write `{brain_root}/meta.md`:
 
 ```markdown
 # {slug}
@@ -140,7 +149,7 @@ If `{brain_root}/.brain/{slug}/meta.md` does not exist:
 {1–3 sentence AI-inferred description of what this project does and why it exists}
 
 ## Source Repository
-{line-2 URL}
+{source URL from git remote}
 
 ## Brain Repository
 {line-1 URL}
@@ -149,28 +158,16 @@ If `{brain_root}/.brain/{slug}/meta.md` does not exist:
 {ISO-8601 timestamp}
 ```
 
-> **Do not write or modify `.brain/index.md` manually.**
-> The `post-merge` hook + `.needs-reindex` flag mechanism rebuilds it automatically.
-> Reading it at session start (step 5) is fine — writing it is not the AI's job.
-
-### 5) Check Reindex Flag & Load Memory
+### 5) Load Memory
 At the **start** of every session, before answering anything:
 
-**5a) Check flag:**
-1. If `{brain_root}/.brain/.needs-reindex` exists:
-   - Run `scripts/rebuild-index.py` (or equivalent) to regenerate `{brain_root}/.brain/index.md`
-   - Delete `{brain_root}/.brain/.needs-reindex`
-   - Stage and commit: `git add .brain/index.md && git commit -m "pinky: rebuild index [skip reindex]"`
-   - Push (silent, background — do not mention to user unless it fails)
-2. If flag does not exist: skip — index is already fresh
-
-**5b) Load memory (read-only):**
-1. Read `{brain_root}/.brain/index.md` — fast overview of all known projects
-2. For the **current slug**: read all relevant `{language}/{filepath}.md` notes
-3. For **other slugs** that look relevant (based on index): read their `meta.md` and related file notes
-4. For each URL in the `# interesting` section of `@pinky`:
-   - Check if that repo has a slug folder under `.brain/`
-   - If not, fetch the repo's README or public file tree for context (read-only)
+1. Read `{brain_root}/meta.md` — project overview
+2. Read `{brain_root}/notes.md` — general project notes
+3. Read all relevant `{language}/{filepath}.md` notes in the brain repo
+4. For each URL in `@links`:
+   - If it's a `.brain` repo: check for a local clone at `~/.pinky/{link-slug}.brain/`
+   - If cloned: read its `meta.md` and any relevant file notes for cross-project context
+   - If not cloned: optionally clone it (read-only) or skip
 5. Surface any useful cross-project context before responding
 
 No further writes happen until end-of-session.
@@ -197,7 +194,7 @@ For each touched file path `<p>`:
 1. Infer `{language}` from extension:
    - `.ts`, `.tsx` → `typescript` | `.js`, `.jsx` → `javascript` | `.py` → `python`
    - `.rb` → `ruby` | `.go` → `go` | `.rs` → `rust` | `.md` → `markdown` | other → `misc`
-2. Write/update: `{brain_root}/.brain/{slug}/{language}/{p}.md`
+2. Write/update: `{brain_root}/{language}/{p}.md`
 
 Template:
 ```markdown
@@ -217,58 +214,49 @@ Template:
 
 ## Last Updated
 - {ISO-8601 timestamp}
-- Source repo: {line-2 URL}
+- Source repo: {source URL}
 ```
 
 Append or merge — never erase still-valid prior memory.
 
 ### 8) Update `@pinky`
 Rewrite `@pinky` in place, preserving exact format:
-1. Line 1: brain URL (unchanged)
-2. Line 2: source URL (unchanged)
-3. Blank line
-4. `# interesting`: preserve existing URLs; append newly discovered related repos from this conversation
-5. Blank line
-6. `# files`: rewrite with all touched files sorted by importance:
-   1. Architecture / core logic
-   2. Security / data integrity
-   3. Public API / contracts
-   4. Build / test / tooling
-   5. Minor docs or style-only edits
+1. Line 1: brain repo URL (unchanged)
+2. Blank line
+3. `@links`: preserve existing URLs; append newly discovered related repos from this conversation
 
 ### 9) Sync Global Skill Copy
-After pulling the brain repo, keep the global Copilot skill in sync:
-1. If `~/.copilot/skills/pinky-memory/SKILL.md` exists and differs from `{brain_root}/SKILL.md`:
-   - Copy `{brain_root}/SKILL.md` → `~/.copilot/skills/pinky-memory/SKILL.md`
+After pulling the skill hub repo, keep the global Copilot skill in sync:
+1. If `~/.agents/skills/pinky-memory/SKILL.md` exists and differs from the hub's `SKILL.md`:
+   - Copy hub's `SKILL.md` → `~/.agents/skills/pinky-memory/SKILL.md`
    - This ensures the AI always runs the latest version of the skill
-2. Skip if this is the brain repo itself (the file is already local)
+2. The hub repo URL can be found in the `@brain` file at the project root, or defaults to `https://github.com/yesitsfebreeze/pinky-and-the-brain`
 
 ### 10) Commit Memory Changes
-In `{brain_root}`:
-1. `git add .brain/{slug}/` — **do NOT stage `.brain/index.md`** (hook owns that file)
-2. Also stage `@pinky` if it changed
-3. Commit: `pinky: update {slug} ({n} files)`
-4. **Push** — the remote receiver's `post-merge` hook will write `.needs-reindex` on the next pull, triggering index rebuild lazily on the next session
+In `{brain_root}` (the cloned brain repo):
+1. `git add -A` — stage all changes in the brain repo
+2. Commit: `pinky: update ({n} files)`
+3. **Push**
+4. Also stage and commit `@pinky` in the **source repo** if it changed
 5. If push fails: leave local commit, report status, continue.
 
 ## Completion Checks
 
 **Session start:**
-1. `@pinky` exists with valid lines 1 and 2
-2. Brain root identified (local dir or `~/.pinky/` clone)
-3. Memory context loaded from `.brain/{slug}/` and `index.md`
+1. `@pinky` exists with valid line 1 (brain repo URL)
+2. Brain repo cloned/synced at `~/.pinky/{slug}.brain/`
+3. Memory context loaded from brain repo
 
 **Session end (mandatory):**
-4. `{brain_root}/.brain/{slug}/meta.md` exists
+4. `{brain_root}/meta.md` exists
 5. Memory note files written for all touched files
-6. `~/.copilot/skills/pinky-memory/SKILL.md` is in sync with brain repo
-7. `@pinky` `# files` section reflects ranked touched files
-8. Git commit created and pushed in brain root (or explicit reason why not)
-9. `post-merge` hook will handle rebuilding `index.md` on the next pull — AI does not need to verify this
+6. `~/.agents/skills/pinky-memory/SKILL.md` is in sync with skill hub
+7. `@pinky` `@links` section up to date
+8. Git commit created and pushed in brain repo (or explicit reason why not)
 
 ## Failure Handling
 1. Invalid URL on line 1 → report and ask for correction
 2. Clone/pull failure → report command + error, avoid partial writes
-3. Missing line 2 → run `git remote get-url origin`; use `unknown-source` if unavailable
+3. Brain repo doesn't exist yet → guide user to create `{slug}.brain` repo on their host
 4. Path collisions or illegal paths → sanitize and log mapping
 5. Push failure (no auth, etc.) → leave local commit, report and continue

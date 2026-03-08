@@ -3,8 +3,8 @@
 # Usage: curl -fsSL https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/main/scripts/install.sh | sh
 set -e
 
-BRAIN_URL="https://github.com/yesitsfebreeze/pinky-and-the-brain.git"
-BRAIN_DIR="$HOME/.pinky"
+HUB_URL="https://github.com/yesitsfebreeze/pinky-and-the-brain.git"
+HUB_DIR=$(mktemp -d)
 SKILL_DIR="$HOME/.agents/skills/pinky-memory"
 
 # Detect VS Code prompts directory for agent installation
@@ -20,48 +20,44 @@ else
   PROMPTS_DIR=""
 fi
 
-# --- 1. Clone or update brain repo ---
-if [ -d "$BRAIN_DIR/.git" ]; then
-  printf '🧠 Updating brain repo...\n'
-  git -C "$BRAIN_DIR" pull --quiet
-else
-  printf '🧠 Cloning brain repo...\n'
-  git clone --quiet "$BRAIN_URL" "$BRAIN_DIR"
-fi
-
-# Activate the post-merge hook so future pulls set the reindex flag
-git -C "$BRAIN_DIR" config core.hooksPath .githooks
+# --- 1. Fetch skill hub (temporary clone for files) ---
+printf 'Fetching skill hub...\n'
+git clone --quiet --depth 1 "$HUB_URL" "$HUB_DIR"
 
 # --- 2. Install skill globally ---
 mkdir -p "$SKILL_DIR"
-cp "$BRAIN_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
-printf '✅ Skill installed → %s\n' "$SKILL_DIR"
+cp "$HUB_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
+printf 'Skill installed -> %s\n' "$SKILL_DIR"
 
 # --- 3. Install @brain and @pinky agents globally ---
 if [ -n "$PROMPTS_DIR" ]; then
   mkdir -p "$PROMPTS_DIR"
-  cp "$BRAIN_DIR/brain.agent.md" "$PROMPTS_DIR/brain.agent.md"
-  cp "$BRAIN_DIR/pinky.agent.md" "$PROMPTS_DIR/pinky.agent.md"
-  printf '✅ @brain and @pinky agents installed → %s\n' "$PROMPTS_DIR"
+  cp "$HUB_DIR/brain.agent.md" "$PROMPTS_DIR/brain.agent.md"
+  cp "$HUB_DIR/pinky.agent.md" "$PROMPTS_DIR/pinky.agent.md"
+  printf '@brain and @pinky agents installed -> %s\n' "$PROMPTS_DIR"
 else
-  printf '⚠️  VS Code prompts directory not found — install brain.agent.md and pinky.agent.md manually\n'
+  printf 'VS Code prompts directory not found - install brain.agent.md and pinky.agent.md manually\n'
 fi
 
 # --- 4. Create @pinky in current project ---
 if [ -f "@pinky" ]; then
-  printf '📌 @pinky already exists — skipping\n'
+  printf '@pinky already exists - skipping\n'
 else
   ORIGIN="$(git remote get-url origin 2>/dev/null || true)"
   if [ -z "$ORIGIN" ]; then
-    printf '⚠️  No git origin found. Create @pinky manually:\n'
-    printf '   Line 1: %s\n' "$BRAIN_URL"
-    printf '   Line 2: <your-repo-url>\n'
+    printf 'No git origin found. Create @pinky manually:\n'
+    printf '   Line 1: https://github.com/<user>/<slug>.brain\n'
   else
-    printf '%s\n%s\n\n# interesting\n\n# files\n' \
-      "https://github.com/yesitsfebreeze/pinky-and-the-brain" \
-      "$ORIGIN" > @pinky
-    printf '📌 Created @pinky → %s\n' "$ORIGIN"
+    # Derive brain repo URL: strip .git suffix, append .brain
+    BRAIN_URL="$(printf '%s' "$ORIGIN" | sed 's/\.git$//')"
+    BRAIN_URL="${BRAIN_URL}.brain"
+    printf '%s\n\n@links\n' "$BRAIN_URL" > @pinky
+    printf 'Created @pinky -> %s\n' "$BRAIN_URL"
+    printf 'Create the brain repo on your host: %s\n' "$BRAIN_URL"
   fi
 fi
 
-printf '🎉 Done! Pinky memory is now active.\n'
+# --- 5. Cleanup ---
+rm -rf "$HUB_DIR"
+
+printf 'Done! Create your {slug}.brain repo and pinky memory is active.\n'

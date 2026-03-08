@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-pinky-memory: rebuild .brain/index.md
+pinky-memory: rebuild index for a {slug}.brain repo
 
-Scans all .brain/{slug}/meta.md files and regenerates index.md.
-Called by the AI when it detects .brain/.needs-reindex at session start.
+Scans all per-file notes and generates a summary index at the brain repo root.
+Can be run inside any .brain repo to regenerate its local index.
 
 Usage:
-    python3 scripts/rebuild-index.py [brain_root]
+    python3 rebuild-index.py [brain_root]
 
-    brain_root defaults to the repo root (parent of this script's directory).
+    brain_root defaults to the current directory.
 """
 
 import os
@@ -16,6 +16,14 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+
+# Language directories to scan for per-file notes
+LANGUAGE_DIRS = {
+    "typescript", "javascript", "python", "ruby", "go", "rust",
+    "java", "kotlin", "swift", "c", "cpp", "csharp", "php",
+    "markdown", "misc",
+}
 
 
 def extract_field(content: str, field: str) -> str:
@@ -37,25 +45,7 @@ def first_sentence(text: str) -> str:
 
 
 def rebuild_index(brain_root: Path) -> None:
-    brain_dir = brain_root / ".brain"
-
-    if not brain_dir.is_dir():
-        print(f"[pinky] .brain/ not found at {brain_dir}", file=sys.stderr)
-        sys.exit(1)
-
-    entries = []
-
-    for meta_file in sorted(brain_dir.glob("*/meta.md")):
-        slug = meta_file.parent.name
-        content = meta_file.read_text(encoding="utf-8")
-
-        source = extract_field(content, "Source Repository")
-        purpose_block = extract_field(content, "Purpose")
-        purpose = first_sentence(purpose_block) if purpose_block else "—"
-        indexed = extract_field(content, "First Indexed") or "—"
-
-        entries.append((slug, source, purpose, indexed))
-
+    meta_path = brain_root / "meta.md"
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     lines = [
@@ -64,32 +54,55 @@ def rebuild_index(brain_root: Path) -> None:
         "",
     ]
 
-    if not entries:
-        lines.append("_No projects indexed yet._\n")
-    else:
-        for slug, source, purpose, indexed in entries:
-            lines.append(f"## {slug}")
-            lines.append(f"- **Source**: {source}")
-            lines.append(f"- **Purpose**: {purpose}")
-            lines.append(f"- **Indexed**: {indexed}")
-            lines.append("")
+    # Include project info from meta.md
+    if meta_path.is_file():
+        content = meta_path.read_text(encoding="utf-8")
+        purpose = extract_field(content, "Purpose")
+        source = extract_field(content, "Source Repository")
+        if purpose:
+            lines.append(f"**Purpose**: {first_sentence(purpose)}")
+        if source:
+            lines.append(f"**Source**: {source}")
+        lines.append("")
 
-    index_path = brain_dir / "index.md"
+    # Scan language directories for per-file notes
+    file_count = 0
+    for lang_dir in sorted(brain_root.iterdir()):
+        if not lang_dir.is_dir():
+            continue
+        if lang_dir.name.startswith("."):
+            continue
+        if lang_dir.name not in LANGUAGE_DIRS:
+            continue
+
+        note_files = sorted(lang_dir.rglob("*.md"))
+        if not note_files:
+            continue
+
+        lines.append(f"## {lang_dir.name}")
+        for note_file in note_files:
+            rel = note_file.relative_to(brain_root)
+            # Strip the .md suffix to get the original file path
+            original = str(rel.parent / note_file.stem) if note_file.stem != note_file.name else str(rel)
+            content = note_file.read_text(encoding="utf-8")
+            purpose = extract_field(content, "Purpose")
+            summary = first_sentence(purpose) if purpose else "—"
+            lines.append(f"- **{original}**: {summary}")
+            file_count += 1
+        lines.append("")
+
+    if file_count == 0:
+        lines.append("_No per-file notes yet._\n")
+
+    index_path = brain_root / "index.md"
     index_path.write_text("\n".join(lines), encoding="utf-8")
-    print(f"[pinky] rebuilt index.md ({len(entries)} project(s))")
-
-    # Remove the reindex flag
-    flag = brain_dir / ".needs-reindex"
-    if flag.exists():
-        flag.unlink()
-        print("[pinky] cleared .needs-reindex flag")
+    print(f"[pinky] rebuilt index.md ({file_count} file note(s))")
 
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         root = Path(sys.argv[1]).resolve()
     else:
-        # Default: two levels up from this script (scripts/ → repo root)
-        root = Path(__file__).resolve().parent.parent
+        root = Path.cwd()
 
     rebuild_index(root)

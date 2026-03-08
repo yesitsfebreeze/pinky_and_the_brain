@@ -1,12 +1,13 @@
 #!/bin/sh
-# pinky-memory: post-merge hook
+# pinky-memory: post-merge hook for {slug}.brain repos
 # Fires after every successful `git pull` that merges new commits.
-# Sets the reindex flag so the AI rebuilds index.md at the start of the next session,
-# rather than blocking the current pull.
+# Can be installed in brain repos to trigger index rebuilds.
+#
+# To activate in a brain repo:
+#   git config core.hooksPath .githooks
 
-BRAIN_DIR="$(git rev-parse --show-toplevel)/.brain"
-
-# Only flag if the .brain/ directory actually exists (skip on fresh clones before first sync)
-if [ -d "$BRAIN_DIR" ]; then
-  touch "$BRAIN_DIR/.needs-reindex"
+# Check if rebuild-index.py exists (bundled with the skill hub)
+SCRIPT_DIR="$(git rev-parse --show-toplevel)/scripts"
+if [ -f "$SCRIPT_DIR/rebuild-index.py" ]; then
+  python3 "$SCRIPT_DIR/rebuild-index.py" "$(git rev-parse --show-toplevel)" 2>/dev/null || true
 fi
