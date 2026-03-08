@@ -84,7 +84,7 @@ Overwrite everything else (skill, instructions, @brain structure).
 | `@brain`                   | List all brain repos + note counts; show all notes for a specific slug |
 | `@prune`                   | Remove all notes below PRUNE_THRESHOLD, commit & push |
 | `@commit`                  | Group changes by scope, create per-scope commits, push → triggers .patb indexing |
-| `@process`                 | Pick the most impactful next todo from `@plan`, gather context, solve it, delete the todo, and commit |
+| `@ply`                 | Pick the most impactful next todo from `@plan`, gather context, solve it, delete the todo, and commit |
 | `@resync`                  | Re-install p&b from latest main, preserving all user content |
 
 ## File Formats

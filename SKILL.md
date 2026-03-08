@@ -349,7 +349,7 @@ git -C {BRAIN_ROOT} push
        Report: "Pruned {N} notes. Pool now has {remaining} notes."
 
 
-### "@process"
+### "@play"
 
 TODO WORKFLOW:
   1. Open {SOURCE_ROOT}/@plan.
@@ -375,6 +375,58 @@ git -C {SOURCE_ROOT} diff --cached --quiet || git -C {SOURCE_ROOT} commit -m "{S
 ```
 
   8. Report what was done and what the next todo would be.
+
+
+### "@listen" / "@speak"
+
+LISTEN MODE ENTRY (`@listen`):
+  1. Enter listen mode — set internal flag LISTEN_MODE = TRUE.
+  2. Acknowledge with a single word meaning "okay / understood / got it"
+     chosen at random from a broad set of human languages (e.g. "Hai", "D'accord",
+     "Entendido", "Certo", "Gut", "Dobro", "Dobré", "Хорошо", "好的", "نعم", etc.).
+     Use a different language each time. No other output.
+
+WHILE IN LISTEN MODE (every subsequent user message):
+  1. Read the message silently — do NOT produce a conversational reply.
+  2. Assess whether the message contains something actionable (an idea, intent,
+     constraint, feature request, question to resolve, or decision).
+     - If YES — actionable content detected:
+       a. Open {SOURCE_ROOT}/@plan.
+          If missing: create it with the standard separator on its own line:
+          `█████████████████████`
+       b. Synthesise a concise plan fragment from the new information.
+          Write or refine content ABOVE the separator line.
+          Merge with any existing above-separator content if related; add a new
+          paragraph or bullet if unrelated/additive.
+       c. Save the file.
+       d. Respond with a single acknowledgement word (same rule as entry — random
+          language, one word only). No explanation, no summary.
+     - If NO — nothing actionable (chit-chat, filler, simple question, etc.):
+       Do NOT respond at all, OR respond with a single acknowledgement word
+       (50 / 50 chance). Nothing else.
+  3. Continue listening. Each new message may refine, extend, or supersede
+     the plan text already written above the separator.
+
+LISTEN MODE EXIT — triggered by `@play` or `@speak`:
+  1. Clear LISTEN_MODE flag.
+  2. If invoked via `@speak`:
+     - Resume normal conversational mode. No immediate action.
+     - Briefly confirm exit: "Back. Here's what I captured:" followed by the
+       current above-separator content of @plan (verbatim, no edits).
+  3. If invoked via `@play`:
+     - Exit listen mode silently.
+     - Immediately run the full `@play` workflow (see ### "@play") using the
+       plans and ideas that were accumulated above the separator.
+     - The above-separator content now serves as the raw-ideas input for @play
+       step 3 — convert to actionable todos, pick the most impactful, execute.
+
+EDGE CASES:
+  - If `@listen` is called when already in listen mode: re-acknowledge with a
+    single word, remain in listen mode, no other effect.
+  - If `@play` is called with no above-separator content and no below-separator
+    todos: inform the user and ask what to work on.
+  - @plan separator line is always exactly: `█████████████████████`
+    Preserve it verbatim; never move or duplicate it.
 
 
 ### "@resync"

@@ -7,12 +7,12 @@ everything above the line is treated as a thing that we want to do, could be tex
 
 below the are the actually created todos by the ai.
 
-when we say `@process` the ai should pick the most impactful relevant next todo.
+when we say `@play` the ai should pick the most impactful relevant next todo.
 gather context using the pinky-and-the-brain skill, and then solve that todo.
 deleting it after its done and making a commit with the changes.
 
 this way we can input ideas, see the todos in the file, and then audit them if needed.
-and send em to the ai to process.
+and send em to the ai to play.
 
 we can even do this with a cron job, so the ai constantly indexes the todos.
 this is what i plan with my editor.
