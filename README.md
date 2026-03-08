@@ -104,8 +104,8 @@ AVOID: [...]
 
 **@pinky** — at source repo root
 ```
-Line 1: source repo URL
-Lines 2+: linked .patb repo URLs
+Line 1: brain repo URL ({SLUG}.patb)
+Lines 2+: linked brain repo URLs
 ```
 
 **thoughts.md** — rated note pool (highest first)

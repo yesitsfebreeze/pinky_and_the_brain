@@ -20,7 +20,7 @@ Determine run mode:
     Overwrite infrastructure (skill, instructions, @brain structure — merging user YAML values).
 
 In UPDATE mode:
-  1. Read {SOURCE_ROOT}/@pinky → extract repo URL (line 1), linked repos (lines 2+)
+  1. Read {SOURCE_ROOT}/@pinky → extract brain repo URL (line 1), linked brain repos (lines 2+)
   2. Read {BRAIN_ROOT}/@brain → extract title, description, YAML config
   3. Read {BRAIN_ROOT}/thoughts.md, tree.md, changes.md, sync.md → keep in memory
   4. Use extracted values as configuration (do NOT require the README config block)
@@ -126,13 +126,13 @@ Rules:
 
 **INSTALL mode:**
   Create {SOURCE_ROOT}/@pinky:
-    Line 1: Current repo URL from configuration table
-    Lines 2+: empty (user adds linked repos later)
+    Line 1: Brain repo URL ({BRAIN_REPO_URL})
+    Lines 2+: empty (user adds linked brain repos later)
   Skip if URL still contains {USER} or {REPO} placeholders.
 
 **UPDATE mode:**
-  Do NOT overwrite — only verify line 1 has a valid URL.
-  Preserve all linked repo URLs on lines 2+.
+  Do NOT overwrite — only verify line 1 has a valid brain repo URL.
+  Preserve all linked brain repo URLs on lines 2+.
 
 
 ## Always-Active Instructions
@@ -161,7 +161,7 @@ Invoke the `patb` skill for all memory operations.
 
 ## Quick Reference
 - @brain: {BRAIN_ROOT}/@brain — origin URL, title, YAML config
-- @pinky: {SOURCE_ROOT}/@pinky — repo URL (line 1), linked repos (lines 2+)
+- @pinky: {SOURCE_ROOT}/@pinky — brain repo URL (line 1), linked brain repos (lines 2+)
 - Brain repo: {REPO_URL}.patb → ~/.patb/{SLUG}.patb/
 - Memory files: thoughts.md, tree.md, changes.md (in .patb)
 - SLUG: last URL path segment, strip .git, lowercase, sanitize
