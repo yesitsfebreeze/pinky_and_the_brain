@@ -1,4 +1,4 @@
-# pinky_and_the_brain
+# Pinky And The Brain
 
 This is the **brain repo** — a shared AI memory store for all your projects.
 
