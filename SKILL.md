@@ -27,7 +27,7 @@ disable-model-invocation: false
 
 ## What This Skill Does
 This skill implements a shared-brain memory workflow:
-- A **brain repo** (`pinky_and_the_brain`) stores all project memory under `.brain/{slug}/`
+- A **brain repo** (`pinky-and-the-brain`) stores all project memory under `.brain/{slug}/`
 - A **local clone** of the brain repo lives at `~/.pinky/`
 - Each project has an `@pinky` marker file at its root pointing to the brain
 
@@ -58,7 +58,7 @@ This skill activates automatically when:
 ## `@pinky` File Format
 
 ```
-https://github.com/yesitsfebreeze/pinky_and_the_brain   ← line 1: brain repo URL (required)
+https://github.com/yesitsfebreeze/pinky-and-the-brain   ← line 1: brain repo URL (required)
 https://github.com/{user}/{source-repo}                  ← line 2: source repo URL (required)
                                                           ← if line 1 == line 2, this IS the brain repo
 

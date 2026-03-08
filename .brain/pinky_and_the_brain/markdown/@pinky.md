@@ -19,4 +19,4 @@ Marker file placed at the root of any project that opts into the pinky memory sy
 
 ## Last Updated
 - 2026-03-08T00:00:00Z
-- Source repo: https://github.com/yesitsfebreeze/pinky_and_the_brain
+- Source repo: https://github.com/yesitsfebreeze/pinky-and-the-brain

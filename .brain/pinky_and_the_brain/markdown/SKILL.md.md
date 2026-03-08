@@ -22,4 +22,4 @@ Defines the `pinky-memory` Copilot skill — the complete procedure the AI follo
 
 ## Last Updated
 - 2026-03-08T00:00:00Z
-- Source repo: https://github.com/yesitsfebreeze/pinky_and_the_brain
+- Source repo: https://github.com/yesitsfebreeze/pinky-and-the-brain

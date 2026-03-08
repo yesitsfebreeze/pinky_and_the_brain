@@ -12,4 +12,4 @@ Public-facing explanation of the pinky memory system for anyone who finds the br
 
 ## Last Updated
 - 2026-03-08T00:00:00Z
-- Source repo: https://github.com/yesitsfebreeze/pinky_and_the_brain
+- Source repo: https://github.com/yesitsfebreeze/pinky-and-the-brain

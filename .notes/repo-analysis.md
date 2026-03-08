@@ -16,3 +16,9 @@
 - Added `scripts/install.sh` (sh-compatible) and `scripts/install.ps1` (PowerShell) — one-liner installers that clone the brain, install the skill globally, and create `@pinky`.
 - Install scripts target `~/.agents/skills/pinky-memory/` for the skill (matching the actual VS Code agents skill directory structure on the user's machine).
 - README updated with a "Quick start" section showing `curl | sh` and `irm | iex` one-liners.
+- Added `brain.agent.md` — a `@brain` VS Code Copilot agent for direct brain operations (remember, recall, list, forget).
+- The `@brain` agent introduces `notes.md` as a new file type under `.brain/{slug}/` for general project notes not tied to specific files.
+- Install scripts updated (both sh and ps1) to also install `brain.agent.md` to the VS Code User prompts directory.
+- `@brain` is the user-facing command interface; `pinky-memory` skill remains the automatic background system.
+- Roles split: `@brain` = read-only (answers questions, recall, list), `@pinky` = write (remember, forget). Two separate agent files.
+- Added `pinky.agent.md` for storage operations. Install scripts now copy both agents.
