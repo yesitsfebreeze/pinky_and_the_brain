@@ -15,12 +15,13 @@ To run a real installation, remove this `## Dry Run` section first.
 
 This is a **drop-in installer** for the *Pinky & the Brain* persistent AI memory system.
 
-**What it does:** Paste this file into any AI chat to automatically install cross-project memory into your environment. The AI will extract and register the skill, wire up always-active instructions, scaffold the config files (`@brain`, `@pinky`) for the current project, and then delete itself — no manual steps required.
+**What it does:** Paste this file into any AI chat to automatically install cross-project memory into your environment. The AI will extract and register the skill, wire up always-active instructions, scaffold `@pinky` in the source repo and `@brain` in the project's `.patb` brain repo, and then delete itself — no manual steps required.
 
 **What gets installed:**
 - `~/.agents/skills/pinky-memory/SKILL.md` — the skill definition the AI invokes for all memory operations
 - An always-active instructions file (path varies by AI environment) — ensures memory is loaded at the start of every session
-- `@brain` and `@pinky` at the **workspace root** — the per-project config and memory anchor files
+- `@pinky` at the source repo root (`{source_root}/@pinky`) — source repo identity + linked `.patb` repos
+- `@brain` in `~/.patb/{slug}.patb/@brain` — brain config and constraints
 
 **How to use:**
 1. Fill in the **Configuration** table below (repo URL, optional constraints)
@@ -73,38 +74,69 @@ Follow the environment detection table in `### Always-Active Instructions` (insi
 
 In dry-run mode, report the detected environment and exact target path, but do not write files.
 
-### Step 4 — Create `@brain`
+### Step 4 — Create the brain repo (remote + local)
 
-At the **workspace root**, create a file named `@brain`:
+Derive `{slug}` from **Current repo URL** (last path segment, strip `.git`, lowercase, sanitize non-alphanumeric except `-_` to `-`).
 
-- Line 1: **Skill hub URL** from the Configuration table
-- For each **Follow** value (not a placeholder), append a line: `+ {value}`
-- For each **Avoid** value (not a placeholder), append a line: `- {value}`
-- If **Max notes** ≠ `64`, append: `max_notes: {value}`
-- If **Min rating** ≠ `30`, append: `min_rating: {value}`
+Set:
+- Brain repo URL: `{current-repo-url}.patb`
+- Local brain root: `~/.patb/{slug}.patb/`
 
-Skip if `@brain` already exists.
+Actions:
+- Ensure parent directory exists: `~/.patb/`.
+- If local brain root already contains a git repo (`.git` exists), keep it.
+- If local brain root does not exist:
+  - Attempt `git clone {current-repo-url}.patb ~/.patb/{slug}.patb/`.
+  - If clone fails because remote does not exist, instruct the user to create `{current-repo-url}.patb` on their git host, then continue using a locally initialized fallback (`mkdir -p ~/.patb/{slug}.patb/`).
 
-In dry-run mode, report whether `@brain` exists and show the exact content that would be written.
+In dry-run mode, report whether local brain root exists, whether clone would run, and whether remote brain repo creation would be required.
 
-### Step 5 — Create `@pinky`
+### Step 5 — Create `{brain_root}/@brain`
 
-At the **workspace root**, create a file named `@pinky` with:
+Target:
+
+```
+~/.patb/{slug}.patb/@brain
+```
+
+Write this structure:
+
+````markdown
+<!-- main-brain-origin-source-url: {current-repo-url} -->
+# {derived excerpt title from source README}
+
+{project description excerpt}
+
+```yaml
+skill_hub_url: {skill-hub-url}
+follow:
+   - {follow-1}
+avoid:
+   - {avoid-1}
+max_notes: {max-notes}
+min_rating: {min-rating}
+```
+````
+
+Rules:
+- Omit empty `follow` or `avoid` lists.
+- Use defaults when values are omitted: `max_notes: 64`, `min_rating: 30`.
+- If `{brain_root}/@brain` does not exist, write it.
+- If it exists but is empty or invalid, replace it with the generated content.
+- If it exists and is valid, preserve user-authored text and only fill missing required fields.
+
+In dry-run mode, report whether `{brain_root}/@brain` exists and show the exact content that would be written.
+
+### Step 6 — Create `{source_root}/@pinky`
+
+At the source repo root, create `@pinky` with:
 
 - Line 1: **Current repo URL** from the Configuration table
+- Lines 2+: linked `.pat b` repo URLs (optional)
 
-Skip if `@pinky` already exists, or if the URL still contains `{user}` or `{repo}` placeholders.
+Skip if `{source_root}/@pinky` already exists, or if the URL still contains `{user}` or `{repo}` placeholders.
 
-In dry-run mode, report whether `@pinky` exists and show the exact content that would be written.
-
-### Step 6 — Create the brain repo
-
-Inform the user: they need to create the **remote** brain repo URL `{current-repo-url}.patb` on their git host (GitHub, GitLab, etc.) if it doesn't already exist. The skill will prompt them on first sync if it is missing.
-
-Example mapping:
-- Current repo URL: `https://github.com/acme/pinky_and_the_brain`
-- Remote brain repo URL: `https://github.com/acme/pinky_and_the_brain.patb`
-- Local clone path: `~/.patb/pinky_and_the_brain.patb/`
+In dry-run mode, report whether `{source_root}/@pinky` exists and show the exact content that would be written.
 
 ### Step 7 — Delete this file
 
@@ -120,7 +152,8 @@ Installation is complete.
 name: pinky-memory
 description: >
   Manage cross-repository AI memory with per-project brain repos ({slug}.patb).
-   Use when a repo has @pinky and @brain files, to sync memory, capture
+   Use when a repo has @pinky at source root and can resolve .patb/@brain,
+   to sync memory, capture
    decisions/pitfalls/useful notes into a rated note pool (thoughts.md), and persist
   them in the project's dedicated brain repo. Also triggers on: "remember this",
   "what do you know about", decisions/pitfalls capture, memory sync requests.
@@ -132,13 +165,13 @@ disable-model-invocation: false
 ## Architecture
 
 ```
-┌ my-project/           ┌ ~/.patb/my-project.patb/
-├── @brain              ├── @brain
-├── @pinky     sync ─►  ├── @pinky
-└── **/*.*              ├── purpose.md
-                        ├── thoughts.md
-                        ├── tree.md
-                        └── changes.md
+{source_root}  sync ─►  {brain_root}
+┌ my-project/    │      ┌ ~/.patb/my-project.patb/
+├── @pinky       │      ├── @brain
+├── **/*.*       │         ├── purpose.md
+                 │         ├── thoughts.md
+                 │         ├── tree.md
+                 │         └── changes.md
 ```
 
 - **One brain repo per project** — memory lives in a dedicated `{slug}.patb` git repo
@@ -147,8 +180,8 @@ disable-model-invocation: false
 - **`tree.md`** — full source-repo file tree with access-rate, line-count, and impact ratings
 - **`changes.md`** — bounded, timestamped changelog of cross-project-relevant changes (max 20 entries) — linked repos read this to discover upstream changes
 - **`sync.md`** — source-repo sync cursor (last indexed source branch + commit + timestamp)
-- **`@brain`** — skill hub URL (line 1) + per-project `+`/`-` behavior constraints + memory config (`max_notes`, `min_rating`)
-- **`@pinky`** — current repo URL (line 1) + links to other `.patb` repos (lines 2+)
+- **`@brain`** — source-origin comment + README-derived title/description + YAML settings (`skill_hub_url`, `follow`, `avoid`, `max_notes`, `min_rating`)
+- **`@pinky`** — source repo URL (line 1) + links to other `.patb` repos (lines 2+)
 - Brain repos are cloned to `~/.patb/{slug}.patb/`
 - Memory runs as a push/pull cycle: session start catch-up + immediate post-push brain update
 
@@ -169,21 +202,24 @@ disable-model-invocation: false
 
 Before answering anything:
 
-1. **Find or create** `@pinky` and `@brain` at the workspace root (using the fallback rules below)
-2. **Read `@brain`**:
-   - Line 1: skill hub URL
-   - Parse and apply all `+`/`-` constraints for the session
-   - Parse `max_notes` (default 64) and `min_rating` (default 30)
-3. **Read `@pinky`**:
-   - Line 1: current repo URL → derive slug (last path segment, strip `.git`, lowercase, sanitize non-alphanumeric except `-_` to `-`)
-   - Lines 2+: linked `.patb` repo URLs
-4. **Derive brain repo URL** (remote URL, not local path): `{current-repo-url}.patb`
-5. **Sync brain repo**:
+1. Determine current source repo URL from `git remote get-url origin` (fallback to configured value if unavailable)
+2. Derive slug from source repo URL (last path segment, strip `.git`, lowercase, sanitize non-alphanumeric except `-_` to `-`)
+3. Derive brain repo URL (remote URL, not local path): `{current-repo-url}.patb`
+4. **Sync brain repo**:
    - If `~/.patb/{slug}.patb/.git` does not exist: `git clone <brain-repo-url> ~/.patb/{slug}.patb/`
    - If it exists: verify remote matches, then `git -C ~/.patb/{slug}.patb/ pull --rebase`
    - If working inside a `.patb` repo directly: use the current directory as brain root, skip clone/pull
    - **Commit pending local changes first**: before pulling, check for uncommitted or staged changes (`git -C {brain_root} status --porcelain`). If any exist, stage and commit them with message `"pb: update ({n} notes)"`, then pull with rebase, then push
-6. **Catch up source pushes (main/master compare)**:
+5. **Find or create** `{brain_root}/@brain` and `{source_root}/@pinky` (using the fallback rules below)
+6. **Read `{brain_root}/@brain`**:
+   - Parse `main-brain-origin-source-url` from the HTML comment
+   - Parse YAML settings (`skill_hub_url`, `follow`, `avoid`, `max_notes`, `min_rating`)
+   - Apply `follow`/`avoid` constraints for the session
+   - Use defaults if missing: `max_notes=64`, `min_rating=30`
+7. **Read `{source_root}/@pinky`**:
+   - Line 1: current repo URL
+   - Lines 2+: linked `.patb` repo URLs
+8. **Catch up source pushes (main/master compare)**:
    - Determine default branch for the source repo: prefer `main`, fallback `master`
    - Determine default branch for the brain repo: prefer `main`, fallback `master`
    - Fetch both repos:
@@ -194,11 +230,11 @@ Before answering anything:
    - Read last indexed source timestamp/hash from `{brain_root}/sync.md` (create if missing)
    - If source head is newer than indexed state, index all missing pushes/commits since the indexed hash into memory artifacts (`thoughts.md`, `tree.md`, optionally `changes.md`), then update `sync.md`
    - Commit and push brain updates immediately after catch-up
-7. **Load memory**:
+9. **Load memory**:
    - Read `{brain_root}/purpose.md` — project purpose and scope summary
    - Read `{brain_root}/thoughts.md` — the rated note pool
    - Read `{brain_root}/tree.md` — source-repo file tree and file-level ratings
-8. **Cross-project context**: for each `.patb` URL in `@pinky` (lines 2+):
+10. **Cross-project context**: for each `.patb` URL in `{source_root}/@pinky` (lines 2+):
    - Check for local clone at `~/.patb/{link-slug}.patb/`
    - If present: read `purpose.md` first
    - If not present locally: derive a raw-file base URL from the repo host, then read `purpose.md` at repo root
@@ -211,10 +247,11 @@ Before answering anything:
    - Decide whether the project's purpose is relevant to the current session or question
    - If **not relevant**: continue to the next linked repo — do not search this repo's notes
    - If **relevant**: sub-search `thoughts.md` for useful context
-8. Surface any useful cross-project context found, including recent changes from linked repos
+11. Surface any useful cross-project context found, including recent changes from linked repos
 
-**If `@pinky` is missing**: derive URL from `git remote get-url origin`, create `@pinky` with it on line 1.
-**If `@brain` is missing**: create `@brain` with the skill hub URL on line 1.
+**If `{source_root}/@pinky` is missing**: create it with current source repo URL on line 1.
+**If `{brain_root}/@brain` is missing or invalid**: create/repair it using the canonical `@brain` format.
+Treat `{brain_root}/@brain` as invalid if it is empty, missing the origin comment, or missing the YAML block.
 
 ### Register Project (first sync only)
 
@@ -273,7 +310,7 @@ This file is updated whenever catch-up indexing or post-push indexing runs.
 
 1. Read `{brain_root}/purpose.md` and `{brain_root}/thoughts.md`
 2. Search notes in the pool for the topic
-3. For each linked `.patb` URL in `@pinky`:
+3. For each linked `.patb` URL in `{source_root}/@pinky`:
    - Read `purpose.md` (from local clone if present; otherwise via the repo raw URL) to understand the project's purpose
    - If the project is not relevant to the query: continue to the next linked repo, do not sub-search this repo's notes
    - If relevant: sub-search `thoughts.md` for matching context
@@ -355,6 +392,33 @@ This file is updated whenever catch-up indexing or post-push indexing runs.
 
 ## Brain Memory File Format
 
+`{brain_root}/@brain`:
+
+````markdown
+<!-- main-brain-origin-source-url: https://github.com/acme/my-project -->
+# API Service
+
+Backend API for auth, billing, and tenant management.
+
+```yaml
+skill_hub_url: https://github.com/yesitsfebreeze/pinky-and-the-brain
+follow:
+   - always write tests
+avoid:
+   - mutating shared state
+max_notes: 64
+min_rating: 30
+```
+````
+
+`{source_root}/@pinky`:
+
+```text
+https://github.com/acme/my-project
+https://github.com/acme/shared-auth.patb
+https://github.com/acme/design-system.patb
+```
+
 `{brain_root}/purpose.md`:
 
 ```markdown
@@ -426,11 +490,11 @@ indexed_at: 2026-03-08T12:34:56Z
 
 This tracks what source push state has already been indexed into the brain repo.
 
-Important: create and maintain these files in the `.patb` brain repository (`{brain_root}`), not in the source repository working tree.
+Important: maintain `@brain`, `purpose.md`, `thoughts.md`, `tree.md`, `changes.md`, and `sync.md` in the `.patb` brain repository (`{brain_root}`). Maintain `@pinky` in the source repository root (`{source_root}`).
 
 ## Failure Handling
 
-1. Invalid URL on line 1 of `@pinky` → report and ask for correction
+1. Invalid URL on line 1 of `{source_root}/@pinky` → report and ask for correction
 2. Clone/pull failure → report command + error, avoid partial writes
 3. Brain repo doesn't exist yet → guide user to create `{slug}.patb` repo on their host
 4. Path collisions or illegal paths → sanitize and log mapping
@@ -457,18 +521,18 @@ Adapt the file format (frontmatter, delimiters) to the detected environment. The
 # Pinky & the Brain (p&b)
 
 You have persistent cross-project memory powered by per-project brain repos.
-This is always active when `@pinky` is present at the workspace root.
+This is always active when the current project can resolve a local brain repo at `~/.patb/{slug}.patb/`.
 Invoke the `pinky-memory` skill to handle all memory operations.
 
 ## Quick Reference
 
 - **`@brain`**:
- - Line 1 = skill hub URL
- - Purpose of the repository (README.md excerpt) or custom description.
- - `+`/`-` lines = behavior constraints
- - `max_notes: N` = note pool cap (default 64)
- - `min_rating: N` = minimum usefulness % to keep (default 30)
+ - Location: `{brain_root}/@brain`
+ - Origin comment = `main-brain-origin-source-url`
+ - Title + short description excerpt from source repo README
+ - YAML settings block: `skill_hub_url`, `follow`, `avoid`, `max_notes`, `min_rating`
 - **`@pinky`**:
+ - Location: `{source_root}/@pinky`
  - Line 1 = current repo URL
  - lines 2+ = linked `.patb` repos
 - **Brain repo**: `{current-repo-url}.patb`, cloned to `~/.patb/{slug}.patb/`
@@ -477,7 +541,7 @@ Invoke the `pinky-memory` skill to handle all memory operations.
 
 ## Session Lifecycle
 
-**Start**: Read `@brain` constraints + config → read `@pinky` → sync brain repo (commit + push any pending local changes first) → load `purpose.md`, `thoughts.md`, `tree.md` → check linked repos' `changes.md` for recent upstream changes
+**Start**: Resolve source repo URL → sync brain repo → read `{brain_root}/@brain` constraints + config → read `{source_root}/@pinky` → load `purpose.md`, `thoughts.md`, `tree.md` → check linked repos' `changes.md` for recent upstream changes
 **End** (mandatory): Extract notes → rate → merge into `thoughts.md` → refresh `purpose.md` + `tree.md` → append cross-project-relevant changes to `changes.md` → prune below threshold → stage locally (commit & push deferred to next session start)
 
 ## Commands
