@@ -41,14 +41,7 @@ Not yet implemented:
 
 ## Phase 4 — Integration & Docs
 
-### 4.1 SKILL.md updates — per phase
-- [ ] Phase 1: prune pass, PRUNE_THRESHOLD, HIBERNATION_DAYS
-- [ ] Phase 2: selection config, ranked loading algorithm, dual query paths
-- [ ] Phase 3: concept tags in note format, concepts.md format, concept-aware queries
-
 ### 4.2 SETUP.md updates
-- [ ] New @brain YAML keys and defaults (each phase)
-- [ ] New file template: concepts.md (Phase 3)
 - [ ] UPDATE mode: migrate old note format → add missing fields with safe defaults
 
 ### 4.3 README.md updates

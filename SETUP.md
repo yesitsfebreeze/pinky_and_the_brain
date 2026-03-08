@@ -215,6 +215,12 @@ SOURCE_HEAD: {CURRENT_COMMIT_HASH}
 INDEXED_AT: {NOW_ISO8601}
 ```
 
+{BRAIN_ROOT}/concepts.md:
+```
+# Concepts
+<!-- auto-generated from concept tags in thoughts.md — do not manually edit -->
+```
+
 
 ## Index Codebase
 
