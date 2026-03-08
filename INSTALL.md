@@ -131,7 +131,7 @@ Invoke the `pinky-memory` skill for all memory operations.
 - @brain: {BRAIN_ROOT}/@brain — origin URL, title, YAML config
 - @pinky: {SOURCE_ROOT}/@pinky — repo URL (line 1), linked repos (lines 2+)
 - Brain repo: {REPO_URL}.patb → ~/.patb/{SLUG}.patb/
-- Memory files: purpose.md, thoughts.md, tree.md, changes.md (in .patb)
+- Memory files: thoughts.md, tree.md, changes.md (in .patb)
 - SLUG: last URL path segment, strip .git, lowercase, sanitize
 
 ## Session Lifecycle
@@ -149,12 +149,6 @@ Runtime: invoke skill for remember/forget/query/list
 ## Memory Init
 
 Create starter files if they don't exist yet:
-
-{BRAIN_ROOT}/purpose.md:
-```
-# {SLUG}
-{1–3 sentence description inferred from README, config, entry points}
-```
 
 {BRAIN_ROOT}/thoughts.md:
 ```

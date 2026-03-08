@@ -18,7 +18,6 @@ automatic ai sync into:
 ```
 ┌ ~/.patb/my-project.patb/ 
 ├── @brain
-├── purpose.md
 ├── thoughts.md
 ├── tree.md
 ├── changes.md

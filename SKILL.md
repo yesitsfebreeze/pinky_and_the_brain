@@ -72,13 +72,10 @@ If missing: create with URL from `git remote get-url origin` on line 1.
 
 ## Load Memory
 
-Read {BRAIN_ROOT}/purpose.md — project purpose and scope
 Read {BRAIN_ROOT}/thoughts.md — rated note pool
 Read {BRAIN_ROOT}/tree.md — file tree with impact ratings
 
 If any memory file is missing (first sync / register):
-  Infer purpose from README.md, config files, entry points
-  Write purpose.md with 1–3 sentence description
   Write thoughts.md (empty pool)
   Write tree.md (empty)
   Write changes.md (empty)
@@ -107,12 +104,12 @@ If source is newer than indexed:
 
 For each linked .patb URL in @pinky lines 2+:
   Check for local clone at ~/.patb/{LINK_SLUG}.patb/
-  If present: read purpose.md
-  If not present: fetch purpose.md via raw URL:
+  If present: read @brain (title + description = project purpose)
+  If not present: fetch @brain via raw URL:
 
 ```
-GitHub:  https://raw.githubusercontent.com/{OWNER}/{REPO}/{BRANCH}/purpose.md
-GitLab:  https://gitlab.com/{OWNER}/{REPO}/-/raw/{BRANCH}/purpose.md
+GitHub:  https://raw.githubusercontent.com/{OWNER}/{REPO}/{BRANCH}/@brain
+GitLab:  https://gitlab.com/{OWNER}/{REPO}/-/raw/{BRANCH}/@brain
 Other:   use host's raw endpoint for {DEFAULT_BRANCH}
 ```
 
@@ -128,10 +125,10 @@ Other:   use host's raw endpoint for {DEFAULT_BRANCH}
 ### "what do you know about X"
 
 QUERY:
-  1. Read {BRAIN_ROOT}/purpose.md and thoughts.md
+  1. Read {BRAIN_ROOT}/@brain and thoughts.md
   2. Search notes for the topic
   3. For each linked .patb in @pinky:
-     Read purpose.md — skip if project not relevant to query
+     Read @brain — skip if project not relevant to query
      If relevant: sub-search that repo's thoughts.md
   4. Present findings concisely — cite which brain repo each came from
 
@@ -139,7 +136,7 @@ QUERY:
 
 LIST:
   1. List all *.patb/ directories under ~/.patb/
-  2. For each: read purpose.md + thoughts.md → show name, purpose, note count
+  2. For each: read @brain + thoughts.md → show name, purpose, note count
   3. If specific slug given: show all notes with ratings
 
 ### "remember that..."
@@ -196,7 +193,7 @@ git -C {BRAIN_ROOT} fetch origin --prune
   5. Index new commits since last indexed hash:
      Extract decisions, pitfalls, conventions, integration-impacting changes
      Merge into thoughts.md with rating/threshold/cap rules
-     Refresh purpose.md and tree.md from current source state
+     Refresh @brain description and tree.md from current source state
      Append cross-project-relevant changes to changes.md (cap 20, newest first)
   6. Update {BRAIN_ROOT}/sync.md:
 ```
@@ -251,10 +248,6 @@ No room + not better than worst → reject (inform user).
 {SOURCE_ROOT}/@pinky:
   Line 1: source repo URL
   Lines 2+: linked .patb URLs
-
-{BRAIN_ROOT}/purpose.md:
-  # {SLUG}
-  {1–3 sentence purpose}
 
 {BRAIN_ROOT}/thoughts.md:
   #### {TITLE}
