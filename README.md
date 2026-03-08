@@ -4,6 +4,27 @@ This is the **brain repo** — a shared AI memory store for all your projects.
 
 Each project that opts in adds an `@pinky` file at its root pointing here. The AI then stores per-file notes, decisions, pitfalls, and project metadata under `.brain/{project-slug}/` in this repo, committed and pushed after each session.
 
+## Quick start
+
+Run one command from your project root to install the skill and create `@pinky`:
+
+**macOS / Linux**
+```sh
+curl -fsSL https://raw.githubusercontent.com/yesitsfebreeze/pinky_and_the_brain/main/scripts/install.sh | sh
+```
+
+**Windows (PowerShell)**
+```powershell
+irm https://raw.githubusercontent.com/yesitsfebreeze/pinky_and_the_brain/main/scripts/install.ps1 | iex
+```
+
+This will:
+1. Clone the brain repo to `~/.pinky/` (or pull if it already exists)
+2. Install the `pinky-memory` skill to `~/.agents/skills/pinky-memory/`
+3. Create an `@pinky` file pointing to this brain and your project's origin
+
+That's it — the AI will pick up `@pinky` automatically on the next conversation.
+
 ## How it works
 
 1. **Add `@pinky` to your project** with two lines:
