@@ -167,6 +167,7 @@ Read source head hash/timestamp from origin/{SOURCE_BRANCH}
 Read indexed hash/timestamp from {BRAIN_ROOT}/sync.md (create if missing)
 If source is newer than indexed:
   Index all commits since indexed hash into thoughts.md, tree.md, changes.md
+  Auto-tag each new note with 1–3 concept tags; add `concepts` field to its metadata comment
   Update sync.md with new hash + timestamp
   Commit and push brain immediately
 
@@ -262,6 +263,7 @@ REMEMBER:
      - Set `created` to today's date (or preserve original on merge)
      - Set `last_used` to today's date
      - Set `sources` to relevant repo-relative file paths (if applicable)
+     - Auto-suggest 1–3 concept tags reflecting the note's topic; add `concepts` field to the metadata comment if any apply
   6. Re-sort by rating (highest first)
   7. Commit and push:
 
@@ -354,7 +356,7 @@ Constraints (from @brain YAML, with defaults):
 Each note format:
 ```
 #### {short title}
-<!-- rating: {0–100} | created: {YYYY-MM-DD} | last_used: {YYYY-MM-DD} -->
+<!-- rating: {0–100} | created: {YYYY-MM-DD} | last_used: {YYYY-MM-DD} | concepts: {tag1}, {tag2} -->
 <!-- sources: {file1}, {file2} -->
 {body text}
 ```
@@ -362,8 +364,9 @@ Each note format:
 - `created`: date the note was first stored
 - `last_used`: date the note was last referenced in reasoning
 - `sources`: comma-separated repo-relative file paths the note relates to (omit line if none)
+- `concepts`: comma-separated concept tags reflecting the note's topic (omit field if none)
 
-Backward compatibility: notes missing `created` or `last_used` are treated as `created: unknown`, `last_used: unknown`. Notes missing `sources` have no source context.
+Backward compatibility: notes missing `created` or `last_used` are treated as `created: unknown`, `last_used: unknown`. Notes missing `sources` have no source context. Notes missing `concepts` have no tags and work normally.
 
 Pool is sorted by rating, highest first.
 When full: new note must outrank an existing one to enter.
@@ -402,12 +405,14 @@ Adjusted ratings are clamped to 0–100. Notes that drop below MIN_RATING are re
 
 {BRAIN_ROOT}/thoughts.md:
   #### {TITLE}
-  <!-- rating: {0–100} | created: {YYYY-MM-DD} | last_used: {YYYY-MM-DD} -->
+  <!-- rating: {0–100} | created: {YYYY-MM-DD} | last_used: {YYYY-MM-DD} | concepts: {tag1}, {tag2} -->
   <!-- sources: {file1}, {file2} -->
   {BODY}
   (sorted highest rating first)
   (sources line omitted when no files are relevant)
+  (concepts field omitted when no tags apply)
   (notes missing created/last_used fields: treat as unknown)
+  (notes missing concepts field: no tags, work normally)
 
 {BRAIN_ROOT}/tree.md:
   | File | Access Rate (1–10) | Line Count | Impact (1–10) | Notes |

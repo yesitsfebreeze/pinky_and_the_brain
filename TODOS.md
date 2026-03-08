@@ -24,52 +24,11 @@ Not yet implemented:
 
 ---
 
-## Phase 1 — Memory Lifecycle
-
-**Priority: High.** Extends the existing note pool without new file structures.
-**Risk: Low.** Backward-compatible.
-
-### 1.1 Note metadata format ✅
-- [x] `created`, `last_used` fields in note comment line
-- [x] `sources` field for repo-relative file paths
-- [x] Backward compat: missing fields treated as `unknown`
-
-### 1.2 Score adjustments ✅
-- [x] +30 used in reasoning, +50 confirmed by code, -10 unused recall, -80 contradicted
-- [x] Clamp to 0–100
-- [x] Applied in After Reasoning step
-
-### 1.3 Decay on load ✅
-- [x] `DECAY_RATE` in @brain YAML (default: 1 point/day)
-- [x] Applied in-memory during Load Memory step
-- [x] Notes with unknown `last_used` skipped
-
-### 1.6 Hibernation guard ✅
-- [x] Freeze decay when `days_since_last_used > HIBERNATION_DAYS` (Option B)
-- [x] `HIBERNATION_DAYS` in @brain YAML (default: 90, 0 = disabled)
-
----
-
 ## Phase 3 — Concept Graph
 
 **Priority: Medium.** Highest long-term value, highest implementation cost.
 **Risk: High.** New file structures, new indexing, new query paths.
 **Depends on:** Phase 1 (metadata) and Phase 2 (selection) being stable.
-
-### 3.1 Decide structure approach ✅
-- [x] **Option A chosen**: inline `concepts` tag in note metadata — low cost, no new file structures.
-- [x] Option B (separate `concepts/` directory) deferred — escalate only if tag search proves insufficient after ≥2 weeks of use.
-
-### 3.2 Concept tagging in notes
-- [ ] Extend note metadata comment with `concepts` field:
-  ```
-  #### bitonic sort for tile ordering
-  <!-- rating: 74 | created: 2026-03-08 | last_used: 2026-03-08 | concepts: tile-sorting, gpu-coherence -->
-  <!-- sources: src/gpu/tile_sort.odin -->
-  ```
-- [ ] During "remember" command: auto-suggest 1–3 concept tags
-- [ ] During catch-up indexing: auto-tag new notes
-- [ ] Backward compat: notes without `concepts` field work normally
 
 ### 3.3 Derived concept index (concepts.md)
 - [ ] Add `concepts.md` to brain root — auto-generated, never manually edited:
