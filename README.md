@@ -70,7 +70,7 @@ RESYNC = TRUE
 Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
 
 This is a (re)install over the existing setup.
-Preserve all user content: thoughts.md, changes.md, tree.md, sync.md, @pinky linked repos.
+Preserve all user content: thoughts.md, changes.md, tree.md, sync.md, @pinky linked repos, @plan (create if missing).
 Overwrite everything else (skill, instructions, @brain structure).
 ```
 
