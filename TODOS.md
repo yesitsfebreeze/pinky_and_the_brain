@@ -22,16 +22,7 @@ What it lacks: notes never decay, no usage tracking, no structured relationships
 **Priority: High.** Directly improves the existing note pool without new file structures.  
 **Risk: Low.** Backward-compatible — extends the note format in thoughts.md.
 
-### 1.2 Score adjustment rules
-- [ ] Define adjustment events in SKILL.md:
-  - `used in reasoning` → +30
-  - `confirmed by code` → +50
-  - `unused recall` (loaded but not referenced) → -10
-  - `contradicted by code or user` → -80
-- [ ] Add "After Reasoning" section to SKILL.md: after answering a user query, scan which notes were actually used and apply adjustments
-- [ ] Commit adjusted ratings back to thoughts.md on session end / push
-
-### 1.3 Time-based decay
+### 1.2 Time-based decay
 - [ ] On session start (during Load Memory), calculate days since `last_used` for each note
 - [ ] Apply decay: `rating -= days_since_last_used * 1` (configurable via @brain YAML: `DECAY_RATE: 1`)
 - [ ] Add `DECAY_RATE` to @brain YAML defaults in SKILL.md and SETUP.md

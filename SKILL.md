@@ -207,6 +207,30 @@ git -C {BRAIN_ROOT} push
 ```
 
 
+## After Reasoning
+
+Mandatory — run after answering a user query that loaded notes from thoughts.md:
+
+  1. Scan which notes from the loaded pool were actually referenced in reasoning
+  2. Apply score adjustments:
+     - Notes used in the response: +30
+     - Notes confirmed by code during the response: +50
+     - Notes loaded but never referenced: -10
+     - Notes contradicted by code or user: -80
+  3. Clamp all adjusted ratings to 0–100
+  4. Remove notes that dropped below MIN_RATING
+  5. Update `last_used` to today's date for all notes that received a positive adjustment
+  6. Re-sort thoughts.md by rating (highest first)
+  7. Commit adjusted ratings:
+
+```
+git -C {BRAIN_ROOT} pull --rebase
+git -C {BRAIN_ROOT} add -A
+git -C {BRAIN_ROOT} diff --cached --quiet || git -C {BRAIN_ROOT} commit -m "pb: adjust ratings after reasoning"
+git -C {BRAIN_ROOT} push
+```
+
+
 ## Post-Push
 
 Mandatory — run immediately after successful source git push:
@@ -263,6 +287,13 @@ Pool is sorted by rating, highest first.
 When full: new note must outrank an existing one to enter.
 Similar note exists at lower rating → merge & replace.
 No room + not better than worst → reject (inform user).
+
+Score adjustments — apply these rating changes when the event occurs:
+  `used in reasoning` → +30 (note was referenced to answer a query)
+  `confirmed by code` → +50 (note's claim was verified against actual code)
+  `unused recall` → -10 (note was loaded into context but never referenced)
+  `contradicted by code or user` → -80 (note's content was proven wrong)
+Adjusted ratings are clamped to 0–100. Notes that drop below MIN_RATING are removed.
 
 
 ## File Formats
