@@ -1,3 +1,4 @@
+```
 ~ 🧠 PINKY & THE BRAIN  
 ~ ────────────────────  
 ~ Persistent cross-project AI memory  
@@ -13,7 +14,6 @@
 ~  
 ~ Architecture:  
 ~
-```  
 ~   {source_root}        sync ─►    {brain_root}  
 ~   ┌ my-project/          │        ┌ ~/.patb/my-project.patb/  
 ~   ├── @pinky             │        ├── @brain  
@@ -22,7 +22,6 @@
 ~                          │        ├── tree.md  
 ~                          │        ├── changes.md  
 ~                          │        └── sync.md  
-```
   
 ~ █ STEP 0: MODE  
   
@@ -40,7 +39,6 @@
 ~  
 ~ Users: fill in Current repo URL before pasting into a chat.  
   
-```
 @ Read this configuration table. If any required field still contains a  
 @ {placeholder}, stop and ask the user to fill it in before continuing.  
 @  
@@ -52,7 +50,6 @@
 @ | Min rating        | `30`                                                     |  
 @ | Avoid (optional)  |                                                          |  
 @ | Follow (optional) |                                                          |  
-```
 
 ! Read configuration from {brain_root}/@brain:  
 !   - Parse `main-brain-origin-source-url` from the HTML comment  
@@ -507,3 +504,4 @@
 ~ Done. Your project now has persistent AI memory.  
 ~ The skill auto-loads on every session via always-active instructions.  
 ~ Use "remember that...", "what do you know about...", etc. to interact.  
+```
