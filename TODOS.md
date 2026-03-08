@@ -43,6 +43,7 @@ Not yet implemented: nothing in phases 1–3.
 
 Done:
 - Rating scale bumped to 0–1000; score adjustments ×10 (+300/+500/−100/−800); MIN_RATING default 300; backward-compat migration note added (SKILL.md, SETUP.md, README.md)
+- Todo file workflow: SETUP.md creates PLAN.md at source root on install/update; SKILL.md adds "@pinky / do the next todo" command with full separator-based PLAN.md workflow
 
 ## Sequencing
 

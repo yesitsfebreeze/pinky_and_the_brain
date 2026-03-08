@@ -349,6 +349,34 @@ git -C {BRAIN_ROOT} push
        Report: "Pruned {N} notes. Pool now has {remaining} notes."
 
 
+### "@pinky" / "do the next todo"
+
+TODO WORKFLOW:
+  1. Open {SOURCE_ROOT}/PLAN.md.
+     If missing: inform user, offer to create it (see SETUP.md — PLAN.md section).
+  2. Parse the separator line (████…████):
+     - Content above the separator: raw ideas
+     - Content below the separator: AI-generated actionable todos
+  3. Select the next todo:
+     - If AI-generated todos exist (below separator): pick the most impactful one
+       based on current session context and brain notes.
+     - If no AI-generated todos exist: look at raw ideas (above separator),
+       select the most actionable, convert it to a todo and append below the separator,
+       then proceed to implement it.
+  4. Gather context: load relevant notes from thoughts.md, check tree.md for
+     impacted files, read source files as needed.
+  5. Implement the selected todo using available tools.
+  6. When done: delete the todo text from PLAN.md (below separator).
+  7. Commit all changes to the source repo:
+
+```
+git -C {SOURCE_ROOT} add -A
+git -C {SOURCE_ROOT} diff --cached --quiet || git -C {SOURCE_ROOT} commit -m "{SUMMARY}"
+```
+
+  8. Report what was done and what the next todo would be.
+
+
 ## After Reasoning
 
 Mandatory — run after answering a user query that loaded notes from thoughts.md:

@@ -1,5 +1,3 @@
-1. create todo file (@brain {SOURCE_ROOT}).
-
 the todo file is separated at the top by a very thick line
 
 
