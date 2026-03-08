@@ -137,6 +137,20 @@ git -C {BRAIN_ROOT} commit -m "pb: prune {N} stale notes"
 git -C {BRAIN_ROOT} push
 ```
 
+Selection pass (run after prune pass — determines which notes enter the prompt):
+  Decay and prune always operate on the FULL pool.
+  Only a ranked subset is loaded into the session context.
+  For each surviving note compute a relevance score:
+    relevance = rating
+    recency_bonus (based on last_used; treat unknown as no bonus):
+      if days_since_used <= 3:  relevance += 20
+      elif days_since_used <= 7: relevance += 10
+    repo_match_bonus:
+      if any of the note's sources exist as files under {SOURCE_ROOT}: relevance += 15
+  Sort notes by relevance descending.
+  Load the top MAX_CONTEXT_NOTES notes into session context (default: 8).
+  Notes not selected are not loaded into the prompt but remain in the pool for future decay/prune.
+
 
 ## Catch-Up
 

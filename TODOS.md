@@ -55,17 +55,6 @@ Not yet implemented:
 **Priority: High.** Critical before note pools exceed ~30 notes.
 **Risk: Medium.** Changes the core load path — must not break session startup.
 
-### 2.2 Ranked loading in Load Memory
-- [ ] Replace "read all of thoughts.md" with selection algorithm:
-  1. Parse all notes (title, rating, last_used, sources)
-  2. Compute relevance: `rating + recency_bonus + repo_match_bonus`
-     - `recency_bonus`: +20 used within 3 days, +10 within 7, +0 otherwise
-     - `repo_match_bonus`: +15 if note sources overlap current repo files
-  3. Sort descending
-  4. Load top `MAX_CONTEXT_NOTES`
-- [ ] Notes not loaded are still subject to decay — decay operates on full pool, selection on prompt
-- [ ] Update SKILL.md Load Memory section
-
 ### 2.3 Ranked loading for cross-project context
 - [ ] Limit linked repos queried to `MAX_LINKED_REPOS`
 - [ ] Rank linked repos by: recency of changes.md + overlap with current session context
