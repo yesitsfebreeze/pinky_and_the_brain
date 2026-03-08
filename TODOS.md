@@ -56,10 +56,9 @@ Not yet implemented:
 **Risk: High.** New file structures, new indexing, new query paths.
 **Depends on:** Phase 1 (metadata) and Phase 2 (selection) being stable.
 
-### 3.1 Decide structure approach
-- [ ] Option A: inline `concepts` tag in note metadata (low cost, incremental)
-- [ ] Option B: separate `concepts/` directory with standalone files (high cost, powerful)
-- [ ] **Recommendation: start with Option A.** Tags in note comments are cheap to add and don't require new file management. Escalate to B only if tag search proves insufficient.
+### 3.1 Decide structure approach ✅
+- [x] **Option A chosen**: inline `concepts` tag in note metadata — low cost, no new file structures.
+- [x] Option B (separate `concepts/` directory) deferred — escalate only if tag search proves insufficient after ≥2 weeks of use.
 
 ### 3.2 Concept tagging in notes
 - [ ] Extend note metadata comment with `concepts` field:
