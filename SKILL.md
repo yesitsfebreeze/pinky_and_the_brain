@@ -25,10 +25,10 @@ If versions match: continue with normal session lifecycle.
 
 Read configuration from {BRAIN_ROOT}/@brain:
   - Parse `main-brain-origin-source-url` from the HTML comment
-  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE
+  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE, PRUNE_THRESHOLD
   - If PATB_URL is set: override BRAIN_REPO_URL with its value
   - Apply FOLLOW/AVOID as session constraints
-  - Defaults if missing: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1
+  - Defaults if missing: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1, PRUNE_THRESHOLD=MIN_RATING
 
 
 ## Resolve Identity
@@ -62,10 +62,10 @@ If working inside a .patb repo directly: use cwd as brain root, skip clone/pull
 
 Read {BRAIN_ROOT}/@brain:
   Parse `main-brain-origin-source-url` from the HTML comment
-  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE
+  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE, PRUNE_THRESHOLD
   If PATB_URL is set: override BRAIN_REPO_URL with its value
   Apply FOLLOW/AVOID as session constraints
-  Defaults: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1
+  Defaults: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1, PRUNE_THRESHOLD=MIN_RATING
 
 If @brain is missing or invalid (empty, no origin comment, no YAML):
   Create/repair using canonical format:
@@ -86,6 +86,7 @@ AVOID:
 MAX_NOTES: {N}
 MIN_RATING: {N}
 DECAY_RATE: {N}  # rating points lost per day since last_used (default: 1)
+PRUNE_THRESHOLD: {N}  # minimum rating to survive prune pass (default: same as MIN_RATING)
 ```
 ````
 
@@ -115,8 +116,20 @@ Decay pass (run after loading thoughts.md):
     Apply `rating -= days_since * DECAY_RATE` (DECAY_RATE from @brain YAML, default 1)
     Cap: if rating < 0, set rating = 0
   Notes missing `last_used` (unknown): skip decay, leave rating unchanged
-  Do NOT persist decayed ratings to disk here — decay is applied in-memory only
-  Persisting happens later via "After Reasoning" or explicit prune passes
+
+Prune pass (run after decay pass):
+  Collect all notes where `rating < PRUNE_THRESHOLD` (PRUNE_THRESHOLD from @brain YAML, default MIN_RATING)
+  If any exist:
+    Remove those notes from thoughts.md
+    Append to {BRAIN_ROOT}/changes.md: `#### {DATE} — pruned {N} stale notes`
+    Commit and push immediately:
+
+```
+git -C {BRAIN_ROOT} pull --rebase
+git -C {BRAIN_ROOT} add -A
+git -C {BRAIN_ROOT} commit -m "pb: prune {N} stale notes"
+git -C {BRAIN_ROOT} push
+```
 
 
 ## Catch-Up
