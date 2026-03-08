@@ -13,6 +13,11 @@ Run one command from your project root to install the skill and create `@pinky`:
 curl -fsSL https://raw.githubusercontent.com/yesitsfebreeze/pinky_and_the_brain/main/scripts/install.sh | sh
 ```
 
+**Windows (CMD)**
+```cmd
+powershell -NoProfile -ExecutionPolicy Bypass -Command "& ([scriptblock]::Create((irm https://raw.githubusercontent.com/yesitsfebreeze/pinky_and_the_brain/main/scripts/install.ps1)))"
+```
+
 **Windows (PowerShell)**
 ```powershell
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/yesitsfebreeze/pinky_and_the_brain/main/scripts/install.ps1)))
