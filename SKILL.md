@@ -380,20 +380,29 @@ git -C {SOURCE_ROOT} diff --cached --quiet || git -C {SOURCE_ROOT} commit -m "{S
 ### "@commit"
 
 COMMIT WORKFLOW:
-  1. Review uncommitted changes in {SOURCE_ROOT}:
+  1. Review all uncommitted changes in {SOURCE_ROOT}:
 ```
 git -C {SOURCE_ROOT} status --short
-git -C {SOURCE_ROOT} diff --cached --stat
+git -C {SOURCE_ROOT} diff
 ```
   2. If nothing staged and nothing modified: report "Nothing to commit."
-  3. Stage all changes:
+  3. Group changes by logical scope:
+     - Analyse which files belong to the same feature, fix, refactor, or concern.
+     - Create one commit per group, not one mega-commit for everything.
+     - Typical groupings: feature changes together, config/tooling separately,
+       docs separately, unrelated fixes as their own commits.
+  4. For each group in order (most foundational first):
+     a. Stage only its files:
 ```
-git -C {SOURCE_ROOT} add -A
+git -C {SOURCE_ROOT} add {file1} {file2} ...
 ```
-  4. Write a concise conventional commit message based on what changed.
-  5. Commit and push:
+     b. Write a concise conventional commit message scoped to that group.
+     c. Commit:
 ```
-git -C {SOURCE_ROOT} commit -m "{MESSAGE}"
+git -C {SOURCE_ROOT} commit -m "{scope}: {message}"
+```
+  5. Push all commits at once:
+```
 git -C {SOURCE_ROOT} push
 ```
   6. Run the full Post-Push indexing loop (see ## Post-Push).

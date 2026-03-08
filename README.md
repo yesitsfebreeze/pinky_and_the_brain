@@ -82,7 +82,7 @@ Overwrite everything else (skill, instructions, @brain structure).
 | "remember that..."         | Rate + store note, commit & push   |
 | "forget about..."          | Remove note, commit & push         |
 | "list brain contents"      | Show all brain repos + note counts |
-| `@commit`                  | Stage all, write commit msg, push → triggers .patb indexing |
+| `@commit`                  | Group changes by scope, create per-scope commits, push → triggers .patb indexing |
 
 ## File Formats
 
