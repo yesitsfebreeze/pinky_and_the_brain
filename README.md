@@ -27,9 +27,10 @@ automatic ai sync into:
 
 ## Install
 
-1. Fill in **Current repo URL** in the config table below
-2. Paste this file into an AI chat
+1. Paste this file into an AI chat
 
+If the workspace has a git remote, `REPO_URL` is inferred automatically via `git remote get-url origin`.
+Otherwise, fill in `REPO_URL` in the config below before pasting.
 The AI will fetch the installer and set everything up automatically.
 
 <!-- Uncomment for dry run:
@@ -43,7 +44,7 @@ Read this configuration. If any required field still contains a
 
 ```yaml
 SKILL_URL:  https://github.com/yesitsfebreeze/pinky-and-the-brain/SKILL.md
-REPO_URL:   https://github.com/{USER}/{REPO}
+REPO_URL:   https://github.com/{USER}/{REPO}  # can be inferred from `git remote get-url origin`
 MAX_NOTES:  512
 MIN_RATING: 30
 # avoid: [
