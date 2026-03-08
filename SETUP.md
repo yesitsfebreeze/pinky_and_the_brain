@@ -105,19 +105,20 @@ AVOID:
   - {AVOID items from config}
 MAX_NOTES: {MAX_NOTES}
 MIN_RATING: {MIN_RATING}
+DECAY_RATE: {DECAY_RATE}
 ```
 ````
 
 Rules:
   - Omit PATB_URL if not set or equal to {REPO_URL}.patb (only store when it differs).
   - Omit empty FOLLOW/AVOID lists entirely.
-  - Use defaults: MAX_NOTES=64, MIN_RATING=30.
+  - Use defaults: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1.
   - If file exists + valid: preserve user content, only fill missing fields.
   - If file exists but empty/invalid: overwrite.
 
 **UPDATE mode** — Read existing @brain fully, then:
   - Preserve: user-edited title and description
-  - Preserve: user-edited YAML values (MAX_NOTES, MIN_RATING, FOLLOW, AVOID)
+  - Preserve: user-edited YAML values (MAX_NOTES, MIN_RATING, DECAY_RATE, FOLLOW, AVOID)
   - Update: any new required fields the template introduces (merge with defaults)
   - If file is missing or invalid: recreate using canonical format above
 

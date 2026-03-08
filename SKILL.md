@@ -25,10 +25,10 @@ If versions match: continue with normal session lifecycle.
 
 Read configuration from {BRAIN_ROOT}/@brain:
   - Parse `main-brain-origin-source-url` from the HTML comment
-  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING
+  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE
   - If PATB_URL is set: override BRAIN_REPO_URL with its value
   - Apply FOLLOW/AVOID as session constraints
-  - Defaults if missing: MAX_NOTES=64, MIN_RATING=30
+  - Defaults if missing: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1
 
 
 ## Resolve Identity
@@ -62,10 +62,10 @@ If working inside a .patb repo directly: use cwd as brain root, skip clone/pull
 
 Read {BRAIN_ROOT}/@brain:
   Parse `main-brain-origin-source-url` from the HTML comment
-  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING
+  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING, DECAY_RATE
   If PATB_URL is set: override BRAIN_REPO_URL with its value
   Apply FOLLOW/AVOID as session constraints
-  Defaults: MAX_NOTES=64, MIN_RATING=30
+  Defaults: MAX_NOTES=64, MIN_RATING=30, DECAY_RATE=1
 
 If @brain is missing or invalid (empty, no origin comment, no YAML):
   Create/repair using canonical format:
@@ -85,6 +85,7 @@ AVOID:
   - {CONSTRAINT}
 MAX_NOTES: {N}
 MIN_RATING: {N}
+DECAY_RATE: {N}  # rating points lost per day since last_used (default: 1)
 ```
 ````
 
@@ -107,6 +108,15 @@ If any memory file is missing (first sync / register):
   Write tree.md (empty)
   Write changes.md (empty)
   Write sync.md with current source head
+
+Decay pass (run after loading thoughts.md):
+  For each note with a valid `last_used` date:
+    Calculate `days_since = (today - last_used).days`
+    Apply `rating -= days_since * DECAY_RATE` (DECAY_RATE from @brain YAML, default 1)
+    Cap: if rating < 0, set rating = 0
+  Notes missing `last_used` (unknown): skip decay, leave rating unchanged
+  Do NOT persist decayed ratings to disk here — decay is applied in-memory only
+  Persisting happens later via "After Reasoning" or explicit prune passes
 
 
 ## Catch-Up
@@ -311,6 +321,7 @@ Adjusted ratings are clamped to 0–100. Notes that drop below MIN_RATING are re
     - {CONSTRAINT}
   MAX_NOTES: {N}
   MIN_RATING: {N}
+  DECAY_RATE: {N}
   ```
 
 {SOURCE_ROOT}/@pinky:

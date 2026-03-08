@@ -22,12 +22,6 @@ What it lacks: notes never decay, no usage tracking, no structured relationships
 **Priority: High.** Directly improves the existing note pool without new file structures.  
 **Risk: Low.** Backward-compatible — extends the note format in thoughts.md.
 
-### 1.2 Time-based decay
-- [ ] On session start (during Load Memory), calculate days since `last_used` for each note
-- [ ] Apply decay: `rating -= days_since_last_used * 1` (configurable via @brain YAML: `DECAY_RATE: 1`)
-- [ ] Add `DECAY_RATE` to @brain YAML defaults in SKILL.md and SETUP.md
-- [ ] Cap decay: never reduce below 0
-
 ### 1.4 Automatic pruning
 - [ ] After decay pass, remove notes where `rating < MIN_RATING`
 - [ ] Log pruned notes to changes.md: `#### {DATE} — pruned {N} stale notes`
