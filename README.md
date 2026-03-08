@@ -45,6 +45,7 @@ Read this configuration. If any required field still contains a
 ```yaml
 SKILL_URL:  https://github.com/yesitsfebreeze/pinky-and-the-brain/SKILL.md
 REPO_URL:   https://github.com/{USER}/{REPO}  # can be inferred from `git remote get-url origin`
+# PATB_URL: https://github.com/{USER}/{REPO}.patb  # optional — override brain repo URL when it differs from {REPO_URL}.patb
 MAX_NOTES:  512
 MIN_RATING: 30
 # avoid: [
@@ -94,6 +95,7 @@ Description
 ```
 ```yaml
 SKILL_URL: ...
+PATB_URL: ...   # optional — only present when brain repo URL differs from {REPO_URL}.patb
 MAX_NOTES: 64
 MIN_RATING: 30
 FOLLOW: [...]

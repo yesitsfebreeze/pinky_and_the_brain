@@ -25,7 +25,8 @@ If versions match: continue with normal session lifecycle.
 
 Read configuration from {BRAIN_ROOT}/@brain:
   - Parse `main-brain-origin-source-url` from the HTML comment
-  - Parse YAML: SKILL_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING
+  - Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING
+  - If PATB_URL is set: override BRAIN_REPO_URL with its value
   - Apply FOLLOW/AVOID as session constraints
   - Defaults if missing: MAX_NOTES=64, MIN_RATING=30
 
@@ -34,7 +35,8 @@ Read configuration from {BRAIN_ROOT}/@brain:
 
 Determine source repo URL: `git remote get-url origin` (fallback to @pinky line 1)
 Derive {SLUG}: last path segment → strip .git → lowercase → sanitize
-Derive BRAIN_REPO_URL: {SOURCE_REPO_URL}.patb
+If PATB_URL is set (from @brain YAML): set BRAIN_REPO_URL = {PATB_URL}
+Otherwise: derive BRAIN_REPO_URL = {SOURCE_REPO_URL}.patb
 Set BRAIN_ROOT = ~/.patb/{SLUG}.patb/
 
 
@@ -58,7 +60,8 @@ If working inside a .patb repo directly: use cwd as brain root, skip clone/pull
 
 Read {BRAIN_ROOT}/@brain:
   Parse `main-brain-origin-source-url` from the HTML comment
-  Parse YAML: SKILL_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING
+  Parse YAML: SKILL_URL, PATB_URL, FOLLOW, AVOID, MAX_NOTES, MIN_RATING
+  If PATB_URL is set: override BRAIN_REPO_URL with its value
   Apply FOLLOW/AVOID as session constraints
   Defaults: MAX_NOTES=64, MIN_RATING=30
 
@@ -73,6 +76,7 @@ If @brain is missing or invalid (empty, no origin comment, no YAML):
 
 ```yaml
 SKILL_URL: {URL}
+PATB_URL: {URL}  # only include when brain repo URL differs from {REPO_URL}.patb
 FOLLOW:
   - {CONSTRAINT}
 AVOID:

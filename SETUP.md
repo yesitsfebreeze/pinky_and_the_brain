@@ -34,7 +34,8 @@ If DRY_RUN is set to TRUE:
 
 Derive {SLUG} from REPO_URL:
   last path segment → strip .git → lowercase → replace non-alphanumeric (except - _) with -
-Set BRAIN_REPO_URL = {REPO_URL}.patb
+If PATB_URL is set and not empty: set BRAIN_REPO_URL = {PATB_URL}
+Otherwise: set BRAIN_REPO_URL = {REPO_URL}.patb
 Set BRAIN_ROOT = ~/.patb/{SLUG}.patb/
 
 
@@ -97,6 +98,7 @@ If clone fails (remote doesn't exist):
 
 ```yaml
 SKILL_URL: {SKILL_URL}
+PATB_URL: {PATB_URL}
 FOLLOW:
   - {FOLLOW items from config}
 AVOID:
@@ -107,6 +109,7 @@ MIN_RATING: {MIN_RATING}
 ````
 
 Rules:
+  - Omit PATB_URL if not set or equal to {REPO_URL}.patb (only store when it differs).
   - Omit empty FOLLOW/AVOID lists entirely.
   - Use defaults: MAX_NOTES=64, MIN_RATING=30.
   - If file exists + valid: preserve user content, only fill missing fields.
