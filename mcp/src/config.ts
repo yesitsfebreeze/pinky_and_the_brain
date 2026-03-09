@@ -61,6 +61,10 @@ function normalizeRepoUrl(url: string): string {
 		.replace(/\\\./g, '.')
 		.replace(/%2e/gi, '.');
 
+	// Canonicalize legacy "-patb" repository suffixes to ".patb".
+	// Example: https://github.com/org/zilo-patb -> https://github.com/org/zilo.patb
+	normalized = normalized.replace(/-patb(?=(?:\.git)?(?:\?.*)?(?:#.*)?$)/i, '.patb');
+
 	return normalized;
 }
 

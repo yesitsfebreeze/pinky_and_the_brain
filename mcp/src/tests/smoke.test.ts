@@ -131,6 +131,17 @@ test('config — resolveConfig normalizes escaped dot in @pinky URL', () => {
   fs.rmSync(src, { recursive: true, force: true });
 });
 
+test('config — resolveConfig canonicalizes legacy -patb repo URL', () => {
+  const src = makeTmp();
+  fs.writeFileSync(path.join(src, '@pinky'), 'https://github.com/yesitsfebreeze/zilo-patb\n');
+  const resolved = resolveConfig(src);
+
+  assert.equal(resolved.brainRoot, path.join(os.homedir(), '.patb', 'zilo.patb'));
+  assert.equal(resolved.brainRepoUrl, 'https://github.com/yesitsfebreeze/zilo.patb');
+
+  fs.rmSync(src, { recursive: true, force: true });
+});
+
 // ---------------------------------------------------------------------------
 // remember
 // ---------------------------------------------------------------------------
