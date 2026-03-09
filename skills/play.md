@@ -22,6 +22,11 @@ TODO WORKFLOW:
      - Content above the separator: raw ideas
      - Content below the separator: AI-generated actionable todos
   3. Select the next todo:
+     MCP FAST PATH: If `mcp_patb_plan_next` tool is available:
+       Call: `mcp_patb_plan_next()` — returns the first pending todo below the separator (or null).
+       If null: fall through to raw-ideas path below.
+       If returned: use that todo as the selected item; skip manual parse.
+     MANUAL PATH (fallback):
      - If AI-generated todos exist (below separator): pick the most impactful one
        based on current session context and brain notes.
      - If no AI-generated todos exist: look at raw ideas (above separator),
@@ -31,6 +36,9 @@ TODO WORKFLOW:
      impacted files, read source files as needed.
   5. Implement the selected todo using available tools.
   6. When done: delete the todo text from {SOURCE_ROOT}/@plan (below separator).
+     MCP FAST PATH: If `mcp_patb_plan_complete` tool is available:
+       Call: `mcp_patb_plan_complete(todo_text)` — removes the matched line; skip manual edit.
+     MANUAL PATH (fallback): edit @plan directly, removing the completed todo line.
   7. Commit all changes to the source repo:
 
 ```
