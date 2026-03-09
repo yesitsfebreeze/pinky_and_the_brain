@@ -98,8 +98,16 @@ CONTEXT_DEPTH: {N}      # max concept link hops, Phase 3 only (default: 2)
 
 Read {SOURCE_ROOT}/@pinky:
   Line 1: this project's brain repo URL ({SLUG}.patb)
-  Lines 2+: linked brain repo URLs
+  Lines 2+: linked brain repo URLs (only lines starting with `http` or `git@`)
+  STATUS line: a line matching `STATUS: {mode}` — restore saved mode on session start:
+    - `STATUS: plan` → set PLAN_MODE = TRUE; notify user: "Resuming plan mode."
+    - `STATUS: play` → set PLAY_MODE = TRUE; notify user: "Resuming play mode."
+    - Absent or `STATUS: idle` → no mode active
 If missing: create with brain repo URL on line 1 (derived from `git remote get-url origin` + .patb suffix, or PATB_URL if set).
+
+STATUS line helpers (used by mode commands below):
+  WRITE STATUS {mode}: read @pinky, update or append `STATUS: {mode}`, save.
+  CLEAR STATUS:        read @pinky, remove any `STATUS: ...` line, save.
 
 
 ## Load Memory
@@ -168,7 +176,7 @@ If source is newer than indexed:
 
 ## Cross-Project Context
 
-Collect all linked .patb URLs from @pinky lines 2+.
+Collect all linked .patb URLs from @pinky: lines starting with `http` or `git@` (skip STATUS and other non-URL lines).
 
 For each linked repo (before ranking):
   Check for local clone at ~/.patb/{LINK_SLUG}.patb/
@@ -354,6 +362,7 @@ git -C {BRAIN_ROOT} push
 TODO WORKFLOW:
   1. Open {SOURCE_ROOT}/@plan.
      If missing: inform user, offer to create it (see SETUP.md — @plan section).
+     WRITE STATUS play → update {SOURCE_ROOT}/@pinky.
   2. Parse the separator line (█████████████████████):
      - Content above the separator: raw ideas
      - Content below the separator: AI-generated actionable todos
@@ -374,19 +383,21 @@ git -C {SOURCE_ROOT} add -A
 git -C {SOURCE_ROOT} diff --cached --quiet || git -C {SOURCE_ROOT} commit -m "{SUMMARY}"
 ```
 
-  8. Report what was done and what the next todo would be.
+  8. When no todos remain (above or below separator): CLEAR STATUS → update {SOURCE_ROOT}/@pinky.
+  9. Report what was done and what the next todo would be.
 
 
-### "@listen" / "@speak"
+### "@plan" / "@exit"
 
-LISTEN MODE ENTRY (`@listen`):
-  1. Enter listen mode — set internal flag LISTEN_MODE = TRUE.
-  2. Acknowledge with a single word meaning "okay / understood / got it"
+PLAN MODE ENTRY (`@plan`):
+  1. Enter plan mode — set internal flag PLAN_MODE = TRUE.
+  2. WRITE STATUS plan → update {SOURCE_ROOT}/@pinky.
+  3. Acknowledge with a single word meaning "okay / understood / got it"
      chosen at random from a broad set of human languages (e.g. "Hai", "D'accord",
      "Entendido", "Certo", "Gut", "Dobro", "Dobré", "Хорошо", "好的", "نعم", etc.).
      Use a different language each time. No other output.
 
-WHILE IN LISTEN MODE (every subsequent user message):
+WHILE IN PLAN MODE (every subsequent user message):
   1. Read the message silently — do NOT produce a conversational reply.
   2. Assess whether the message contains something actionable (an idea, intent,
      constraint, feature request, question to resolve, or decision).
@@ -404,29 +415,45 @@ WHILE IN LISTEN MODE (every subsequent user message):
      - If NO — nothing actionable (chit-chat, filler, simple question, etc.):
        Do NOT respond at all, OR respond with a single acknowledgement word
        (50 / 50 chance). Nothing else.
-  3. Continue listening. Each new message may refine, extend, or supersede
+  3. Continue planning. Each new message may refine, extend, or supersede
      the plan text already written above the separator.
 
-LISTEN MODE EXIT — triggered by `@play` or `@speak`:
-  1. Clear LISTEN_MODE flag.
-  2. If invoked via `@speak`:
+PLAN MODE EXIT — triggered by `@play` or `@exit`:
+  1. Clear PLAN_MODE flag.
+  2. CLEAR STATUS → update {SOURCE_ROOT}/@pinky.
+  3. If invoked via `@exit`:
      - Resume normal conversational mode. No immediate action.
      - Briefly confirm exit: "Back. Here's what I captured:" followed by the
        current above-separator content of @plan (verbatim, no edits).
-  3. If invoked via `@play`:
-     - Exit listen mode silently.
+  4. If invoked via `@play`:
+     - Exit plan mode silently.
      - Immediately run the full `@play` workflow (see ### "@play") using the
        plans and ideas that were accumulated above the separator.
      - The above-separator content now serves as the raw-ideas input for @play
        step 3 — convert to actionable todos, pick the most impactful, execute.
 
 EDGE CASES:
-  - If `@listen` is called when already in listen mode: re-acknowledge with a
-    single word, remain in listen mode, no other effect.
+  - If `@plan` is called when already in plan mode: re-acknowledge with a
+    single word, remain in plan mode, no other effect.
   - If `@play` is called with no above-separator content and no below-separator
     todos: inform the user and ask what to work on.
   - @plan separator line is always exactly: `█████████████████████`
     Preserve it verbatim; never move or duplicate it.
+
+
+### "@exit"
+
+EXIT WORKFLOW:
+  1. Clear PLAN_MODE flag (if set).
+  2. Clear PLAY_MODE flag (if set).
+  3. CLEAR STATUS → update {SOURCE_ROOT}/@pinky.
+  4. If any mode was active:
+     - Resume normal conversational mode.
+     - If PLAN_MODE was active: confirm exit with "Back. Here's what I captured:"
+       followed by the current above-separator content of @plan (verbatim, no edits).
+     - If PLAY_MODE was active: confirm abort with a one-line summary of any
+       work completed before the exit.
+  5. If no mode was active: acknowledge with a single word and resume normal mode.
 
 
 ### "@resync"

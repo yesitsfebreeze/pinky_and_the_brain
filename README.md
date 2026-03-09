@@ -85,7 +85,9 @@ Overwrite everything else (skill, instructions, @brain structure).
 | `@brain`                   | List all brain repos + note counts; show all notes for a specific slug |
 | `@prune`                   | Remove all notes below PRUNE_THRESHOLD, commit & push |
 | `@commit`                  | Group changes by scope, create per-scope commits, push → triggers .patb indexing |
-| `@ply`                 | Pick the most impactful next todo from `@plan`, gather context, solve it, delete the todo, and commit |
+| `@plan`                    | Enter plan mode — each message is silently captured into `@plan` above the separator |
+| `@play`                    | Exit plan mode and pick the most impactful next todo from `@plan`, gather context, solve it, delete the todo, and commit |
+| `@exit`                    | Exit plan mode or play mode and return to normal conversation |
 | `@resync`                  | Re-install p&b from latest main, preserving all user content |
 
 ## File Formats
@@ -108,13 +110,14 @@ Description
 ```
 Line 1: brain repo URL ({SLUG}.patb)
 Lines 2+: linked brain repo URLs
+STATUS: plan|play|idle   # active mode — written by @plan/@play, cleared by @exit
 ```
 
 **{SOURCE_ROOT}/@plan**
 ```
 Freeform ideas/notes (above the thick separator ████)
 ████████████████████
-AI-generated todos (below the separator — managed by @ply)
+AI-generated todos (below the separator — managed by @play)
 ```
 
 **thoughts.md** — rated note pool (highest first)

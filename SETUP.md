@@ -20,7 +20,7 @@ Determine run mode:
     Overwrite infrastructure (skill, instructions, @brain structure — merging user YAML values).
 
 In UPDATE mode:
-  1. Read {SOURCE_ROOT}/@pinky → extract brain repo URL (line 1), linked brain repos (lines 2+)
+  1. Read {SOURCE_ROOT}/@pinky → extract brain repo URL (line 1), linked brain repos (lines 2+), STATUS line
   2. Read {BRAIN_ROOT}/@brain → extract title, description, YAML config
   3. Read {BRAIN_ROOT}/thoughts.md, tree.md, changes.md, sync.md → keep in memory
   4. Use extracted values as configuration (do NOT require the README config block)
@@ -86,7 +86,7 @@ If clone fails (remote doesn't exist):
     Skip remote setup. Brain works locally only until user adds a remote.
 
 
-## @brain
+## {BRAIN_ROOT}/@brain
 
 **INSTALL mode** — Write {BRAIN_ROOT}/@brain:
 
@@ -129,7 +129,7 @@ Rules:
   - If file is missing or invalid: recreate using canonical format above
 
 
-## @pinky
+## {SOURCE_ROOT}/@pinky
 
 **INSTALL mode:**
   Create {SOURCE_ROOT}/@pinky:
@@ -140,9 +140,10 @@ Rules:
 **UPDATE mode:**
   Do NOT overwrite — only verify line 1 has a valid brain repo URL.
   Preserve all linked brain repo URLs on lines 2+.
+  Preserve any existing `STATUS: ...` line.
 
 
-## @plan
+## {SOURCE_ROOT}/@plan
 
 **INSTALL mode:**
   If {SOURCE_ROOT}/@plan does not exist:
@@ -192,7 +193,7 @@ Invoke the `patb` skill for all memory operations.
 
 ## Quick Reference
 - @brain: {BRAIN_ROOT}/@brain — origin URL, title, YAML config
-- @pinky: {SOURCE_ROOT}/@pinky — brain repo URL (line 1), linked brain repos (lines 2+)
+- @pinky: {SOURCE_ROOT}/@pinky — brain repo URL (line 1), linked repos (lines 2+), STATUS line
 - Brain repo: {REPO_URL}.patb → ~/.patb/{SLUG}.patb/
 - Memory files: thoughts.md, tree.md, changes.md (in .patb)
 - SLUG: last URL path segment, strip .git, lowercase, sanitize
