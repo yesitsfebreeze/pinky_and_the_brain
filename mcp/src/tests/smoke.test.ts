@@ -18,9 +18,9 @@ import path from 'node:path';
 
 // Import tools after patching
 import { remember } from '../tools/remember.js';
-import { forget }   from '../tools/forget.js';
-import { query }    from '../tools/query.js';
-import { prune }    from '../tools/prune.js';
+import { forget } from '../tools/forget.js';
+import { query } from '../tools/query.js';
+import { prune } from '../tools/prune.js';
 import { planAdd, planNext, planComplete } from '../tools/plan.js';
 import { PatbConfig } from '../config.js';
 import { deriveSlug, brainRootFromUrl, resolveConfig } from '../config.js';
@@ -58,7 +58,7 @@ let tmpSource = '';
 let cfg: PatbConfig;
 
 before(() => {
-  tmpBrain  = makeTmp();
+  tmpBrain = makeTmp();
   tmpSource = makeTmp();
   cfg = makeConfig(tmpBrain, tmpSource);
   // Create a minimal @plan file for plan tool tests
@@ -69,7 +69,7 @@ before(() => {
 });
 
 after(() => {
-  fs.rmSync(tmpBrain,  { recursive: true, force: true });
+  fs.rmSync(tmpBrain, { recursive: true, force: true });
   fs.rmSync(tmpSource, { recursive: true, force: true });
 });
 
@@ -149,15 +149,15 @@ test('remember — clamps rating to 0–1000', async () => {
 
 test('remember — stores concepts and sources', async () => {
   const res = await remember(cfg, {
-    title:    'Concept note',
-    body:     'Has tags',
-    rating:   600,
+    title: 'Concept note',
+    body: 'Has tags',
+    rating: 600,
     concepts: 'alpha, beta',
-    sources:  'src/foo.ts',
+    sources: 'src/foo.ts',
   });
   assert.equal(res.stored, true);
   assert.deepEqual(res.note!.concepts, ['alpha', 'beta']);
-  assert.deepEqual(res.note!.sources,  ['src/foo.ts']);
+  assert.deepEqual(res.note!.sources, ['src/foo.ts']);
 });
 
 // ---------------------------------------------------------------------------
@@ -207,7 +207,7 @@ test('query — returns stored notes ranked by relevance', async () => {
   const brain4 = makeTmp();
   const cfg4 = makeConfig(brain4, tmpSource);
   await remember(cfg4, { title: 'Relevant note', body: 'contains the keyword', rating: 700 });
-  await remember(cfg4, { title: 'Other note',    body: 'unrelated text',      rating: 500 });
+  await remember(cfg4, { title: 'Other note', body: 'unrelated text', rating: 500 });
 
   const res = await query(cfg4, { query: 'keyword' });
   assert.ok(res.notes.length > 0);
@@ -235,7 +235,7 @@ test('query — respects maxResults override', async () => {
 test('prune — dry run reports without modifying', async () => {
   const brain6 = makeTmp();
   const cfg6 = makeConfig(brain6, tmpSource);
-  await remember(cfg6, { title: 'Weak note',   body: 'below threshold', rating: 200, force: true });
+  await remember(cfg6, { title: 'Weak note', body: 'below threshold', rating: 200, force: true });
   await remember(cfg6, { title: 'Strong note', body: 'above threshold', rating: 800 });
 
   const res = await prune(cfg6, { dryRun: true });
@@ -252,8 +252,8 @@ test('prune — dry run reports without modifying', async () => {
 test('prune — removes notes below threshold', async () => {
   const brain7 = makeTmp();
   const cfg7 = makeConfig(brain7, tmpSource);
-  await remember(cfg7, { title: 'Low note',  body: 'prunable', rating: 200, force: true });
-  await remember(cfg7, { title: 'High note', body: 'keeper',   rating: 800 });
+  await remember(cfg7, { title: 'Low note', body: 'prunable', rating: 200, force: true });
+  await remember(cfg7, { title: 'High note', body: 'keeper', rating: 800 });
 
   const res = await prune(cfg7, {});
   assert.equal(res.pruned.length, 1);
