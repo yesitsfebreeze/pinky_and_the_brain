@@ -26,17 +26,53 @@ MCP server for Pinky & The Brain — provides typed tool calls and resource acce
 
 ## Setup
 
+The p&b installer (`SETUP.md`) handles building and configuring the MCP server automatically when `node` and `npm` are in PATH.
+
+To add MCP to an existing p&b install, or to build manually:
+
+**1. Build the server**
+```sh
+cd ~/.agents/skills/patb/mcp
+npm install
+npm run build
+```
+*(The MCP source is cloned from this repo into `~/.agents/skills/patb/mcp/` by the installer.)*
+
+**2. Add `.vscode/mcp.json` to your project** (VS Code + GitHub Copilot)
+
+Unix / macOS:
 ```json
-// .vscode/mcp.json
 {
   "servers": {
     "patb": {
+      "type": "stdio",
       "command": "node",
-      "args": ["${workspaceFolder}/../.agents/skills/patb/mcp/dist/index.js"]
+      "args": ["${env:HOME}/.agents/skills/patb/mcp/dist/index.js"],
+      "env": {
+        "PATB_SOURCE_ROOT": "${workspaceFolder}"
+      }
     }
   }
 }
 ```
+
+Windows:
+```json
+{
+  "servers": {
+    "patb": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${env:USERPROFILE}/.agents/skills/patb/mcp/dist/index.js"],
+      "env": {
+        "PATB_SOURCE_ROOT": "${workspaceFolder}"
+      }
+    }
+  }
+}
+```
+
+Once the server is running, all p&b commands (`remember`, `forget`, `query`, `prune`, `sync`, `plan_*`) use typed MCP tool calls instead of writing markdown directly. The AI skill remains active as a fallback when MCP is unavailable.
 
 ## Structure
 

@@ -492,6 +492,68 @@ Write its contents to: `~/.agents/skills/patb/version`
 This is compared before each skill run to detect when an update is available.
 
 
+## MCP Build
+
+If `node` and `npm` are available:
+
+  Step 1 — Fetch MCP source into install location:
+
+  ```
+  git clone --depth=1 https://github.com/yesitsfebreeze/pinky-and-the-brain /tmp/patb-mcp-src
+  cp -r /tmp/patb-mcp-src/mcp ~/.agents/skills/patb/mcp
+  rm -rf /tmp/patb-mcp-src
+  ```
+
+  In UPDATE mode: overwrite existing source (node_modules preserved for faster rebuild).
+  On Windows: use system temp dir instead of /tmp; use `xcopy /E /I /Y` or `robocopy` for copy.
+
+  Step 2 — Build:
+
+  ```
+  cd ~/.agents/skills/patb/mcp && npm install && npm run build
+  ```
+
+  Step 3 — Write `.vscode/mcp.json` to {SOURCE_ROOT}/.vscode/mcp.json if it does not already exist:
+
+  **Unix / macOS:**
+  ```json
+  {
+    "servers": {
+      "patb": {
+        "type": "stdio",
+        "command": "node",
+        "args": ["${env:HOME}/.agents/skills/patb/mcp/dist/index.js"],
+        "env": {
+          "PATB_SOURCE_ROOT": "${workspaceFolder}"
+        }
+      }
+    }
+  }
+  ```
+
+  **Windows:**
+  ```json
+  {
+    "servers": {
+      "patb": {
+        "type": "stdio",
+        "command": "node",
+        "args": ["${env:USERPROFILE}/.agents/skills/patb/mcp/dist/index.js"],
+        "env": {
+          "PATB_SOURCE_ROOT": "${workspaceFolder}"
+        }
+      }
+    }
+  }
+  ```
+
+  Do NOT overwrite an existing `.vscode/mcp.json` — user may have customised it.
+
+  If build fails: warn user — markdown-direct fallback remains active.
+
+If `node` / `npm` are not available: skip this section silently.
+
+
 ## Cleanup
 
 Delete this installer file from disk (if it was written as a temp file).
