@@ -1,17 +1,17 @@
 # Pinky & The Brain — Skill
 
-## Version Check
+## Main Repo Sync
 
-Read local version file: `~/.ptba/@brain/version`
+Before executing any skill or command, ensure the main p&b repo is up to date:
 
-Compare line 1 (version string) to local `~/.agents/skills/patb/version`.
-If local file is missing or version differs: run @resync, then continue.
-If versions match: continue with normal session lifecycle.
+`git -C ~/.patb/@brain pull --rebase`
+
+If pull fails, report the error and stop. Do not continue with stale skill files.
 
 
 ## Load Context
 
-READ: `~/.ptba/@brain/CONTEXT.md`
+READ: `~/.patb/@brain/CONTEXT.md`
 
 Mandatory startup checklist (before any tool calls):
   1. Find `@pinky` in `SOURCE_ROOT` (workspace repo root)
@@ -271,44 +271,44 @@ QUERY PATH — full-pool concept-aware topic search:
 
 ### "@brain"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/brain.md`
+READ and EXECUTE: `~/.patb/@brain/skills/brain.md`
 
 ### "@remember <that...>"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/remember.md`
+READ and EXECUTE: `~/.patb/@brain/skills/remember.md`
 
 ### "@forget <about...>"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/forget.md`
+READ and EXECUTE: `~/.patb/@brain/skills/forget.md`
 
 ### "@prune"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/prune.md`
+READ and EXECUTE: `~/.patb/@brain/skills/prune.md`
 
 
 ### "@play"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/play.md`
+READ and EXECUTE: `~/.patb/@brain/skills/play.md`
 
 
 ### "@plan" / "@exit"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/plan.md`
+READ and EXECUTE: `~/.patb/@brain/skills/plan.md`
 
 
 ### "@exit"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/exit.md`
+READ and EXECUTE: `~/.patb/@brain/skills/exit.md`
 
 
 ### "@resync"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/resync.md`
+READ and EXECUTE: `~/.patb/@brain/skills/resync.md`
 
 
 ### "@commit"
 
-READ and EXECUTE: `~/.ptba/@brain/skills/commit.md`
+READ and EXECUTE: `~/.patb/@brain/skills/commit.md`
 
 
 ## After Reasoning

@@ -1,10 +1,10 @@
 # pb-plan — Enter Plan Mode
 
-## Version Check
+## Main Repo Sync
 
-Read local version file: `~/.ptba/@brain/version`
-Compare line 1 to local `~/.agents/skills/patb/version`.
-If missing or differs: run @resync, then continue.
+Before executing this command, ensure main p&b repo is current:
+`git -C ~/.patb/@brain pull --rebase`
+If pull fails, stop and report the error.
 
 ## Setup
 

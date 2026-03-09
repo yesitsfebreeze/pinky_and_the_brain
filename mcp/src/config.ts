@@ -51,14 +51,28 @@ const DEFAULTS = {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
+function normalizeRepoUrl(url: string): string {
+	let normalized = url.trim();
+
+	// Accept URLs that were escaped in markdown/JSON contexts.
+	normalized = normalized
+		.replace(/^(['"])(.*)\1$/, '$2')
+		.replace(/\\\//g, '/')
+		.replace(/\\\./g, '.')
+		.replace(/%2e/gi, '.');
+
+	return normalized;
+}
+
 export function deriveSlug(url: string): string {
-	const segment = url.replace(/\/+$/, '').split('/').pop() ?? 'unknown';
-	return segment
-		.replace(/\.patb$/, '')
-		.replace(/\.git$/, '')
-		.replace(/\.patb$/, '')
+	const segment = normalizeRepoUrl(url).replace(/\/+$/, '').split('/').pop() ?? 'unknown';
+	const stripped = segment.replace(/(\.patb|\.git)+$/gi, '');
+	const slug = stripped
 		.toLowerCase()
-		.replace(/[^a-z0-9\-_]/g, '-');
+		.replace(/[^a-z0-9\-_]/g, '-')
+		.replace(/-+/g, '-')
+		.replace(/^-+|-+$/g, '');
+	return slug || 'unknown';
 }
 
 export function brainRootFromUrl(url: string): string {
@@ -117,7 +131,7 @@ export function resolveConfig(sourceRoot?: string): PatbConfig {
 	}
 	let preliminaryBrainUrl = '';
 	const lines = fs.readFileSync(pinkyPath, 'utf8').split('\n');
-	preliminaryBrainUrl = lines[0]?.trim() ?? '';
+	preliminaryBrainUrl = normalizeRepoUrl(lines[0] ?? '');
 	if (!preliminaryBrainUrl) {
 		throw new Error(
 			`Invalid @pinky: first line must be this project's brain repo URL (${pinkyPath}). ` +
@@ -136,7 +150,8 @@ export function resolveConfig(sourceRoot?: string): PatbConfig {
 	}
 
 	// Step 4: If PATB_URL present in @brain YAML, re-derive brainRoot and re-read @brain
-	const patbUrl = str(configYaml['PATB_URL']);
+	const rawPatbUrl = str(configYaml['PATB_URL']);
+	const patbUrl = rawPatbUrl ? normalizeRepoUrl(rawPatbUrl) : undefined;
 	if (patbUrl) {
 		brainRoot = brainRootFromUrl(patbUrl);
 		const overrideBrainFile = path.join(brainRoot, '@brain');

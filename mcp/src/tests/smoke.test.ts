@@ -81,6 +81,8 @@ test('config — deriveSlug strips .git and .patb suffixes', () => {
   assert.equal(deriveSlug('https://example.com/acme/my-project.git'), 'my-project');
   assert.equal(deriveSlug('https://example.com/acme/my-project.patb'), 'my-project');
   assert.equal(deriveSlug('https://example.com/acme/my-project.patb.git'), 'my-project');
+  assert.equal(deriveSlug('https://example.com/acme/my-project\\.patb'), 'my-project');
+  assert.equal(deriveSlug('https://example.com/acme/my-project%2Epatb'), 'my-project');
 });
 
 test('config — brainRootFromUrl maps .patb URL to ~/.patb/{slug}.patb', () => {
@@ -114,6 +116,17 @@ test('config — resolveConfig resolves .patb URL under ~/.patb', () => {
 
   assert.equal(resolved.sourceRoot, path.resolve(src));
   assert.equal(resolved.brainRoot, path.join(os.homedir(), '.patb', 'example.patb'));
+
+  fs.rmSync(src, { recursive: true, force: true });
+});
+
+test('config — resolveConfig normalizes escaped dot in @pinky URL', () => {
+  const src = makeTmp();
+  fs.writeFileSync(path.join(src, '@pinky'), 'https://example.com/acme/example\\.patb\n');
+  const resolved = resolveConfig(src);
+
+  assert.equal(resolved.brainRoot, path.join(os.homedir(), '.patb', 'example.patb'));
+  assert.equal(resolved.brainRepoUrl, 'https://example.com/acme/example.patb');
 
   fs.rmSync(src, { recursive: true, force: true });
 });

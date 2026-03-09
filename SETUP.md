@@ -65,12 +65,8 @@ MANDATORY: If @pinky exists at workspace root, execute the skill instructions on
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/SKILL.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/SKILL.md
-Else if ~/.ptba/@brain/SKILL.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/SKILL.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/SKILL.md
 ````
 
 
@@ -96,12 +92,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/remember.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/remember.md
-Else if ~/.ptba/@brain/skills/remember.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/remember.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/remember.md
 ````
 
 ---
@@ -120,12 +112,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/forget.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/forget.md
-Else if ~/.ptba/@brain/skills/forget.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/forget.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/forget.md
 ````
 
 ---
@@ -144,12 +132,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/brain.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/brain.md
-Else if ~/.ptba/@brain/skills/brain.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/brain.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/brain.md
 ````
 
 ---
@@ -168,12 +152,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/prune.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/prune.md
-Else if ~/.ptba/@brain/skills/prune.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/prune.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/prune.md
 ````
 
 ---
@@ -192,12 +172,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/commit.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/commit.md
-Else if ~/.ptba/@brain/skills/commit.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/commit.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/commit.md
 ````
 
 ---
@@ -216,12 +192,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/plan.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/plan.md
-Else if ~/.ptba/@brain/skills/plan.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/plan.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/plan.md
 ````
 
 ---
@@ -241,12 +213,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/play.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/play.md
-Else if ~/.ptba/@brain/skills/play.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/play.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/play.md
 ````
 
 ---
@@ -265,12 +233,8 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/exit.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/exit.md
-Else if ~/.ptba/@brain/skills/exit.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/exit.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/exit.md
 ````
 
 ---
@@ -289,29 +253,21 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/resync.md exists:
-  READ and EXECUTE: {SOURCE_ROOT}/skills/resync.md
-Else if ~/.ptba/@brain/skills/resync.md exists:
-  READ and EXECUTE: ~/.ptba/@brain/skills/resync.md
-Else:
-  Tell user to run @resync because local skill source is missing.
+Run before execution: `git -C ~/.patb/@brain pull --rebase`
+READ and EXECUTE: ~/.patb/@brain/skills/resync.md
 ````
 
 
-## Source Clone
+## Main Repo Sync
 
-Set SRC_ROOT = ~/.ptba/@brain
+Ensure the main local p&b source repo exists at `~/.patb/@brain`:
 
-If {BRAIN_URL} equals {REPO_URL}:
-  Skip clone (workspace is the canonical source already).
-Else if {SRC_ROOT}/.git does not exist:
-  git clone https://github.com/yesitsfebreeze/pinky-and-the-brain {SRC_ROOT}
-  If clone fails: stop and report error — skill source must be local.
-Else:
-  git -C {SRC_ROOT} pull --rebase --quiet
+- If `~/.patb/@brain/.git` is missing:
+  `git clone https://github.com/yesitsfebreeze/pinky-and-the-brain ~/.patb/@brain`
+- Else:
+  `git -C ~/.patb/@brain pull --rebase --quiet`
 
-This clone provides local access to SKILL.md, CONTEXT.md, and all skill files,
-eliminating network fetches for skill content on every session start.
+All skill and command definitions are executed from this local repo.
 
 
 ## Global Repo Catalog
@@ -661,15 +617,6 @@ git -C {BRAIN_ROOT} add -A
 git -C {BRAIN_ROOT} diff --cached --quiet || git -C {BRAIN_ROOT} commit -m "pb: {install|update} - {SLUG}"
 git -C {BRAIN_ROOT} push
 ```
-
-
-## Store Version
-
-Read local file: `~/.ptba/@brain/version`
-
-Write its contents to: `~/.agents/skills/patb/version`
-
-This is compared before each skill run to detect when an update is available.
 
 
 ## MCP Build

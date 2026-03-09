@@ -208,7 +208,7 @@ p&b ships an optional MCP server that lets AI assistants call typed tool functio
 
 The p&b installer (`SETUP.md`) handles everything automatically when `node` and `npm` are in PATH:
 1. Uses local workspace skill files directly when `{BRAIN_URL} == {REPO_URL}` (self-hosted mode)
-2. Otherwise keeps a local clone at `~/.ptba/@brain/` for fast reads
+2. Ensures `~/.patb/@brain/` is synced before skill execution and uses it as the local source
 3. Copies `mcp/` to `~/.agents/skills/patb/mcp/`
 4. Runs `npm install && npm run build`
 5. Writes `.vscode/mcp.json` to your project root (if not already present)
