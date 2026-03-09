@@ -44,12 +44,49 @@ export function writeThoughts(brainRoot: string, notes: Note[]): void {
 // tree.md  (raw markdown table, not parsed into a structured type)
 // ---------------------------------------------------------------------------
 
+/**
+ * Sort tree.md table rows by the Impact column (col 4, 1-based) descending.
+ * Table format: | File | Access Rate (1–10) | Line Count | Impact (1–10) | Notes |
+ */
+function sortTreeByImpact(content: string): string {
+  const lines = content.split('\n');
+  const tableStart = lines.findIndex(l => l.trim().startsWith('|'));
+  if (tableStart === -1) return content;
+
+  const headerLine = lines[tableStart];
+  const sepLine = lines[tableStart + 1];
+
+  const dataRows: string[] = [];
+  let afterTable = tableStart + 2;
+  while (afterTable < lines.length && lines[afterTable]!.trim().startsWith('|')) {
+    dataRows.push(lines[afterTable]!);
+    afterTable++;
+  }
+
+  const getImpact = (row: string): number => {
+    // split by '|': [0]='' [1]=File [2]=AccessRate [3]=LineCount [4]=Impact [5]=Notes
+    const cols = row.split('|').map(c => c.trim());
+    const val = parseInt(cols[4] ?? '0', 10);
+    return isNaN(val) ? 0 : val;
+  };
+
+  dataRows.sort((a, b) => getImpact(b) - getImpact(a));
+
+  return [
+    ...lines.slice(0, tableStart),
+    headerLine,
+    sepLine,
+    ...dataRows,
+    ...lines.slice(afterTable),
+  ].join('\n');
+}
+
 export function readTree(brainRoot: string): string {
   return readFile(path.join(brainRoot, 'tree.md'));
 }
 
 export function writeTree(brainRoot: string, content: string): void {
-  writeAtomic(path.join(brainRoot, 'tree.md'), content);
+  writeAtomic(path.join(brainRoot, 'tree.md'), sortTreeByImpact(content));
 }
 
 // ---------------------------------------------------------------------------
