@@ -119,6 +119,30 @@ export function serializeNotePool(notes: Note[]): string {
 }
 
 // ---------------------------------------------------------------------------
+// Migration
+// ---------------------------------------------------------------------------
+
+/**
+ * Fill missing `created` and `lastUsed` fields with `fallbackDate` for every
+ * note that lacks them.  Returns the number of notes that were updated.
+ *
+ * This is a pure in-place mutation — the same array is returned so callers
+ * don't have to rebind the reference.
+ */
+export function migrateNotePool(notes: Note[], fallbackDate: string): number {
+  let migrated = 0;
+  for (const note of notes) {
+    if (!note.created || !note.lastUsed) {
+      if (!note.created) note.created = fallbackDate;
+      if (!note.lastUsed) note.lastUsed = fallbackDate;
+      migrated++;
+    }
+  }
+  return migrated;
+}
+
+
+// ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 

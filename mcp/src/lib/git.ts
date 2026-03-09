@@ -70,6 +70,22 @@ export async function defaultBranch(dir: string): Promise<string> {
   return 'main';
 }
 
+/**
+ * Return the last commit date (YYYY-MM-DD) for a specific file in the repo.
+ * Returns null if the file has no git history or the repo is empty.
+ */
+export async function fileLastCommitDate(dir: string, file: string): Promise<string | null> {
+  const g = git(dir);
+  try {
+    const log = await g.log({ file, maxCount: 1 });
+    const date = log.latest?.date;
+    if (!date) return null;
+    return new Date(date).toISOString().slice(0, 10);
+  } catch {
+    return null;
+  }
+}
+
 /** Return commits since `sinceHash` (exclusive) on the current branch. */
 export async function commitsSince(
   dir: string,

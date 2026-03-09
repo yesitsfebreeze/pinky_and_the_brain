@@ -109,7 +109,7 @@ const TOOLS = [
   },
   {
     name: 'sync',
-    description: 'Pull --rebase the brain repo and push any local changes.',
+    description: 'Pull --rebase the brain repo, push any local changes, and auto-migrate notes missing created/last_used dates.',
     inputSchema: { type: 'object', properties: {} },
   },
   {

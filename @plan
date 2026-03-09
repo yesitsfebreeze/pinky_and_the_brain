@@ -7,9 +7,7 @@
 5. **Migration** — Existing thoughts.md files without `created`/`last_used`: set both to file's last git commit date. Notes without `concepts`: leave blank, tag organically.
 6. **Prune threshold independence** — Should PRUNE_THRESHOLD differ from MIN_RATING? Useful if you want to accept notes at 30 but only prune at 15 after score adjustments. Needs testing.
 
-
 █████████████████████
-
 
 ## Phase 3 — Concept Graph
 
@@ -79,4 +77,4 @@ Replace AI-instruction-based memory writes with a typed MCP server. The skill/RE
 - [x] Smoke tests: one test per tool against a tmp brain dir (vitest or plain node:test)
 
 ---
-
+- [ ] Migration: fill created/last_used from git log for notes missing those fields; run automatically in sync
