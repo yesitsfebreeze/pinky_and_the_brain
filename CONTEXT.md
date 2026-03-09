@@ -18,12 +18,19 @@ Brain repo URL priority (first match wins):
 Set BRAIN_ROOT = ~/.patb/{SLUG}.patb/
 If working inside a .patb repo directly: use cwd as BRAIN_ROOT, skip clone/pull.
 
+Path truth table:
+  SOURCE_ROOT            -> workspace repo root (has @pinky)
+  BRAIN_ROOT             -> ~/.patb/{SLUG}.patb/ (has @brain + memory files)
+  GLOBAL_INDEX_ROOT      -> ~/.patb/@brain/ (catalog only)
+
+Never assume @brain is inside SOURCE_ROOT.
+
 
 ## Key Files
 
 | Path | Purpose |
 |---|---|
-| `{SOURCE_ROOT}/@pinky` | Line 1: brain repo URL; lines 2+: linked repos (http/git@ only); STATUS: {mode} line |
+| `{SOURCE_ROOT}/@pinky` | Public `.patb` repo links only. Line 1: this repo's own brain URL (always itself); lines 2+: linked repos (http/git@ only); STATUS: {mode} line |
 | `{BRAIN_ROOT}/@brain` | `<!-- main-brain-origin-source-url: {URL} -->` + YAML config |
 | `{BRAIN_ROOT}/thoughts.md` | Rated note pool, sorted by rating desc |
 | `{BRAIN_ROOT}/tree.md` | `\| File \| Access Rate (1–10) \| Line Count \| Impact (1–10) \| Notes \|` |

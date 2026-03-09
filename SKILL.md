@@ -13,6 +13,11 @@ If versions match: continue with normal session lifecycle.
 
 READ: `~/.ptba/@brain/CONTEXT.md`
 
+Mandatory startup checklist (before any tool calls):
+  1. Find `@pinky` in `SOURCE_ROOT` (workspace repo root)
+  2. Map brain repo URL (line 1 of `@pinky`) to `BRAIN_ROOT` under `~/.patb/{SLUG}.patb/`
+  3. Do not look for `@brain` in the workspace root
+
 Resolve identity and set {SLUG}, BRAIN_ROOT, SOURCE_ROOT per CONTEXT.md.
 
 
@@ -70,7 +75,8 @@ CONTEXT_DEPTH: {N}      # max concept link hops, Phase 3 only (default: 2)
 ## @pinky
 
 Read {SOURCE_ROOT}/@pinky:
-  Line 1: this project's brain repo URL ({SLUG}.patb)
+  Public `.patb` repo links only
+  Line 1: this project's own brain repo URL ({SLUG}.patb) (always itself)
   Lines 2+: linked brain repo URLs (only lines starting with `http` or `git@`)
   STATUS line: a line matching `STATUS: {mode}` — restore saved mode on session start:
     - `STATUS: plan` → set PLAN_MODE = TRUE; notify user: "Resuming plan mode."
@@ -146,7 +152,7 @@ If source is newer than indexed:
 
 ## Cross-Project Context
 
-Collect all linked .patb URLs from @pinky: lines starting with `http` or `git@` (skip STATUS and other non-URL lines).
+Collect linked public .patb URLs from @pinky: lines 2+ starting with `http` or `git@` (skip line 1, STATUS, and other non-URL lines).
 
 For each linked repo (before ranking):
   Check for local clone at ~/.patb/{LINK_SLUG}.patb/

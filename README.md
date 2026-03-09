@@ -46,6 +46,18 @@ automatic ai sync into:
 └── sync.md
 ```
 
+## Path Truth Table
+
+Always treat these as canonical:
+
+| Symbol | Location | Notes |
+|---|---|---|
+| `SOURCE_ROOT` | workspace repo root | contains `@pinky` and `@plan` |
+| `BRAIN_ROOT` | `~/.patb/{SLUG}.patb/` | contains `@brain`, `thoughts.md`, `tree.md`, `changes.md`, `sync.md` |
+| global catalog root | `~/.patb/@brain/` | catalog-only repo, not the active project brain |
+
+Never assume `@brain` exists in the workspace repo root. It lives under `~/.patb/...`.
+
 ## Install
 
 1. Paste this file into an AI chat
@@ -112,7 +124,8 @@ Description
 
 **{SOURCE_ROOT}/@pinky**
 ```
-Line 1: brain repo URL ({SLUG}.patb)
+Public `.patb` repo links only
+Line 1: this project's own brain repo URL ({SLUG}.patb) (always itself)
 Lines 2+: linked brain repo URLs
 STATUS: plan|play|idle   # active mode — written by @plan/@play, cleared by @exit
 ```

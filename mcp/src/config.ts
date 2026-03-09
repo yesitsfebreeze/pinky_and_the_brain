@@ -54,7 +54,9 @@ const DEFAULTS = {
 export function deriveSlug(url: string): string {
 	const segment = url.replace(/\/+$/, '').split('/').pop() ?? 'unknown';
 	return segment
+		.replace(/\.patb$/, '')
 		.replace(/\.git$/, '')
+		.replace(/\.patb$/, '')
 		.toLowerCase()
 		.replace(/[^a-z0-9\-_]/g, '-');
 }
@@ -103,13 +105,24 @@ function strArr(v: unknown): string[] {
  */
 export function resolveConfig(sourceRoot?: string): PatbConfig {
 	const root = path.resolve(sourceRoot ?? process.env['PATB_SOURCE_ROOT'] ?? process.cwd());
+	const expectedBrainBase = path.resolve(path.join(os.homedir(), '.patb'));
 
 	// Step 1: Read @pinky to get the preliminary brain repo URL
 	const pinkyPath = path.join(root, '@pinky');
+	if (!fs.existsSync(pinkyPath)) {
+		throw new Error(
+			`Missing @pinky at source root (${pinkyPath}). ` +
+			`SOURCE_ROOT must be the workspace repo root, and brain repos live under ~/.patb (not the repo root).`
+		);
+	}
 	let preliminaryBrainUrl = '';
-	if (fs.existsSync(pinkyPath)) {
-		const lines = fs.readFileSync(pinkyPath, 'utf8').split('\n');
-		preliminaryBrainUrl = lines[0]?.trim() ?? '';
+	const lines = fs.readFileSync(pinkyPath, 'utf8').split('\n');
+	preliminaryBrainUrl = lines[0]?.trim() ?? '';
+	if (!preliminaryBrainUrl) {
+		throw new Error(
+			`Invalid @pinky: first line must be this project's brain repo URL (${pinkyPath}). ` +
+			`Do not look for @brain in the workspace; brain repos are under ~/.patb/{slug}.patb.`
+		);
 	}
 
 	// Step 2: Derive preliminary brainRoot from @pinky line 1
@@ -132,11 +145,22 @@ export function resolveConfig(sourceRoot?: string): PatbConfig {
 		}
 	}
 
+	const resolvedBrainRoot = path.resolve(brainRoot);
+	const isUnderPatb =
+		resolvedBrainRoot === expectedBrainBase ||
+		resolvedBrainRoot.startsWith(`${expectedBrainBase}${path.sep}`);
+	if (!isUnderPatb) {
+		throw new Error(
+			`Resolved brain root is outside ~/.patb (${resolvedBrainRoot}). ` +
+			`Expected a path under ${expectedBrainBase}.`
+		);
+	}
+
 	const brainRepoUrl = patbUrl ?? preliminaryBrainUrl;
 
 	return {
 		sourceRoot: root,
-		brainRoot,
+		brainRoot: resolvedBrainRoot,
 		brainRepoUrl,
 		skillUrl: str(configYaml['SKILL_URL']) ?? '',
 		patbUrl,

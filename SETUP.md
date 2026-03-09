@@ -433,13 +433,14 @@ Rules:
 
 **INSTALL mode:**
   Create {SOURCE_ROOT}/@pinky:
-    Line 1: Brain repo URL ({BRAIN_REPO_URL})
-    Lines 2+: empty (user adds linked brain repos later)
+    Public `.patb` repo links only
+    Line 1: Brain repo URL ({BRAIN_REPO_URL}) for this repo (always itself)
+    Lines 2+: empty (user adds linked public `.patb` repos later)
   Skip if URL still contains {USER} or {REPO} placeholders.
 
 **UPDATE mode:**
-  Do NOT overwrite — only verify line 1 has a valid brain repo URL.
-  Preserve all linked brain repo URLs on lines 2+.
+  Do NOT overwrite — only verify line 1 has a valid brain repo URL for this repo (always itself).
+  Preserve all linked public brain repo URLs on lines 2+.
   Preserve any existing `STATUS: ...` line.
 
 
@@ -486,7 +487,7 @@ Invoke the `patb` skill for all memory operations.
 
 ## Quick Reference
 - @brain: {BRAIN_ROOT}/@brain — origin URL, title, YAML config
-- @pinky: {SOURCE_ROOT}/@pinky — brain repo URL (line 1), linked repos (lines 2+), STATUS line
+- @pinky: {SOURCE_ROOT}/@pinky — public `.patb` links only; this repo's brain URL on line 1 (always itself), linked repos on lines 2+, STATUS line
 - Brain repo: {REPO_URL}.patb → ~/.patb/{SLUG}.patb/
 - Memory files: thoughts.md, tree.md, changes.md (in .patb)
 - SLUG: last URL path segment, strip .git, lowercase, sanitize

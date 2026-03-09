@@ -23,6 +23,7 @@ import { query }    from '../tools/query.js';
 import { prune }    from '../tools/prune.js';
 import { planAdd, planNext, planComplete } from '../tools/plan.js';
 import { PatbConfig } from '../config.js';
+import { deriveSlug, brainRootFromUrl, resolveConfig } from '../config.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -70,6 +71,51 @@ before(() => {
 after(() => {
   fs.rmSync(tmpBrain,  { recursive: true, force: true });
   fs.rmSync(tmpSource, { recursive: true, force: true });
+});
+
+// ---------------------------------------------------------------------------
+// config
+// ---------------------------------------------------------------------------
+
+test('config — deriveSlug strips .git and .patb suffixes', () => {
+  assert.equal(deriveSlug('https://example.com/acme/my-project.git'), 'my-project');
+  assert.equal(deriveSlug('https://example.com/acme/my-project.patb'), 'my-project');
+  assert.equal(deriveSlug('https://example.com/acme/my-project.patb.git'), 'my-project');
+});
+
+test('config — brainRootFromUrl maps .patb URL to ~/.patb/{slug}.patb', () => {
+  const root = brainRootFromUrl('https://example.com/acme/demo.patb');
+  assert.equal(root, path.join(os.homedir(), '.patb', 'demo.patb'));
+});
+
+test('config — resolveConfig rejects missing @pinky with actionable message', () => {
+  const src = makeTmp();
+  assert.throws(
+    () => resolveConfig(src),
+    /Missing @pinky .*brain repos live under ~\/\.patb/i
+  );
+  fs.rmSync(src, { recursive: true, force: true });
+});
+
+test('config — resolveConfig rejects empty @pinky URL line', () => {
+  const src = makeTmp();
+  fs.writeFileSync(path.join(src, '@pinky'), '\n');
+  assert.throws(
+    () => resolveConfig(src),
+    /Invalid @pinky.*Do not look for @brain in the workspace/i
+  );
+  fs.rmSync(src, { recursive: true, force: true });
+});
+
+test('config — resolveConfig resolves .patb URL under ~/.patb', () => {
+  const src = makeTmp();
+  fs.writeFileSync(path.join(src, '@pinky'), 'https://example.com/acme/example.patb\n');
+  const resolved = resolveConfig(src);
+
+  assert.equal(resolved.sourceRoot, path.resolve(src));
+  assert.equal(resolved.brainRoot, path.join(os.homedir(), '.patb', 'example.patb'));
+
+  fs.rmSync(src, { recursive: true, force: true });
 });
 
 // ---------------------------------------------------------------------------
