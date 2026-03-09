@@ -51,22 +51,22 @@ Replace AI-instruction-based memory writes with a typed MCP server. The skill/RE
 - [x] `mcp/src/config.ts` — Parse @brain YAML config, resolve BRAIN_ROOT from @pinky line 1
 
 ### 5.2 MCP tools
-- [ ] `remember` — validate + rate note, insert into thoughts.md sorted by rating, commit & push
-- [ ] `forget` — fuzzy search pool, confirm match list, remove entries, commit & push
-- [ ] `query` — return top-N notes by relevance formula (rating + recency + repo-match), with concept expansion up to CONTEXT_DEPTH hops
-- [ ] `prune` — remove all notes below PRUNE_THRESHOLD, log deletions to changes.md, commit & push
-- [ ] `sync` — pull brain repo, rebase, push; report diff
-- [ ] `plan_add` / `plan_next` / `plan_complete` — manage todos in @plan below the separator
+- [x] `remember` — validate + rate note, insert into thoughts.md sorted by rating, commit & push
+- [x] `forget` — fuzzy search pool, confirm match list, remove entries, commit & push
+- [x] `query` — return top-N notes by relevance formula (rating + recency + repo-match), with concept expansion up to CONTEXT_DEPTH hops
+- [x] `prune` — remove all notes below PRUNE_THRESHOLD, log deletions to changes.md, commit & push
+- [x] `sync` — pull brain repo, rebase, push; report diff
+- [x] `plan_add` / `plan_next` / `plan_complete` — manage todos in @plan below the separator
 
 ### 5.3 MCP resources
-- [ ] `patb://thoughts` — expose full note pool
-- [ ] `patb://tree` — expose tree.md file impact map
-- [ ] `patb://changes` — expose changes.md changelog
-- [ ] `patb://plan` — expose @plan contents
+- [x] `patb://thoughts` — expose full note pool
+- [x] `patb://tree` — expose tree.md file impact map
+- [x] `patb://changes` — expose changes.md changelog
+- [x] `patb://plan` — expose @plan contents
 
 ### 5.4 Server entry + config
-- [ ] `mcp/src/index.ts` — register all tools + resources, start MCP server
-- [ ] `.vscode/mcp.json` — workspace MCP config pointing to `mcp/dist/index.js`
+- [x] `mcp/src/index.ts` — register all tools + resources, start MCP server
+- [x] `.vscode/mcp.json` — workspace MCP config pointing to `mcp/dist/index.js`
 - [ ] Add `npm install && npm run build` step to install flow; update mcp/README.md Setup section
 
 ### 5.5 Keep self-referencing update method intact

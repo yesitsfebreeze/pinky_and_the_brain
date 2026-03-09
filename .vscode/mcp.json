@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "patb": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${workspaceFolder}/mcp/dist/index.js"],
+      "env": {
+        "PATB_SOURCE_ROOT": "${workspaceFolder}"
+      }
+    }
+  }
+}
