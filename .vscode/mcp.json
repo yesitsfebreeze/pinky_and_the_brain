@@ -3,7 +3,9 @@
     "patb": {
       "type": "stdio",
       "command": "node",
-      "args": ["${env:USERPROFILE}/.agents/skills/patb/mcp/dist/index.js"],
+      "args": [
+        "${env:USERPROFILE}/.agents/skills/patb/mcp/dist/index.js"
+      ],
       "env": {
         "PATB_SOURCE_ROOT": "${workspaceFolder}"
       }
