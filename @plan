@@ -70,12 +70,12 @@ Replace AI-instruction-based memory writes with a typed MCP server. The skill/RE
 - [x] Add `npm install && npm run build` step to install flow; update mcp/README.md Setup section
 
 ### 5.5 Keep self-referencing update method intact
-- [ ] SKILL.md version check + @resync flow: unchanged — README paste still works as bootstrap
+- [x] SKILL.md version check + @resync flow: unchanged — README paste still works as bootstrap
 - [x] After MCP install: update SKILL.md to call MCP tools (remember/forget/etc.) instead of writing markdown directly, while keeping markdown-direct as fallback when MCP is unavailable
 - [x] `@resync` rebuilds skill AND re-runs `npm install && npm run build` in `mcp/` if present
 
 ### 5.6 Docs + tests
-- [ ] Update main README: add MCP section with setup snippet (`.vscode/mcp.json`), clarify skill = fallback
+- [x] Update main README: add MCP section with setup snippet (`.vscode/mcp.json`), clarify skill = fallback
 - [ ] Smoke tests: one test per tool against a tmp brain dir (vitest or plain node:test)
 
 ---

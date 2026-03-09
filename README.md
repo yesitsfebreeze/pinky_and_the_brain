@@ -182,3 +182,76 @@ When you query `"what do you know about X"`, the skill does a concept-match pass
 | Config key | Default | Effect |
 |---|---|---|
 | `CONTEXT_DEPTH` | `2` | Maximum concept-link hops during query expansion |
+
+## MCP Server
+
+p&b ships an optional MCP server that lets AI assistants call typed tool functions instead of writing raw markdown. Once installed, the skill automatically uses MCP tools when they are available — falling back to markdown-direct if the server is not running.
+
+### How it's installed
+
+The p&b installer (`SETUP.md`) handles everything automatically when `node` and `npm` are in PATH:
+1. Copies `mcp/` to `~/.agents/skills/patb/mcp/`
+2. Runs `npm install && npm run build`
+3. Writes `.vscode/mcp.json` to your project root (if not already present)
+
+To rebuild manually after `@resync` or a manual clone:
+```sh
+cd ~/.agents/skills/patb/mcp
+npm install && npm run build
+```
+
+### `.vscode/mcp.json`
+
+**Unix / macOS**
+```json
+{
+  "servers": {
+    "patb": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${env:HOME}/.agents/skills/patb/mcp/dist/index.js"],
+      "env": { "PATB_SOURCE_ROOT": "${workspaceFolder}" }
+    }
+  }
+}
+```
+
+**Windows**
+```json
+{
+  "servers": {
+    "patb": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${env:USERPROFILE}/.agents/skills/patb/mcp/dist/index.js"],
+      "env": { "PATB_SOURCE_ROOT": "${workspaceFolder}" }
+    }
+  }
+}
+```
+
+### Tools
+
+| Tool | Description |
+|---|---|
+| `remember(title, body, rating, concepts?, sources?)` | Store a note into thoughts.md, commit & push |
+| `forget(query, confirmed?, ids?)` | Search + optionally remove matching notes |
+| `query(query, maxResults?)` | Ranked note lookup with concept expansion |
+| `prune(dryRun?)` | Remove notes below PRUNE_THRESHOLD |
+| `sync()` | Pull --rebase brain repo and push |
+| `plan_add(todo)` | Append a todo below the @plan separator |
+| `plan_next()` | Return the next pending todo |
+| `plan_complete(todo)` | Remove a completed todo by text match |
+
+### Resources
+
+| URI | Description |
+|---|---|
+| `patb://thoughts` | Full rated note pool (thoughts.md) |
+| `patb://tree` | File impact map (tree.md) |
+| `patb://changes` | Changelog (changes.md) |
+| `patb://plan` | Current @plan contents |
+
+### Skill fallback
+
+The AI skill (`SKILL.md`) remains the primary install mechanism and always-active fallback. If the MCP server is not running or `node` is unavailable, every command falls back to markdown-direct reads/writes with no loss of functionality.
