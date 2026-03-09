@@ -61,11 +61,16 @@ user-invocable: true
 disable-model-invocation: false
 ---
 
-MANDATORY: If @pinky exists at workspace root, fetch and execute the remote skill instructions below on the VERY FIRST message of every session. Do not defer this — run the full session lifecycle (sync brain → read @brain + @pinky → load memory → check linked repos) before handling any user request.
+MANDATORY: If @pinky exists at workspace root, execute the skill instructions on the VERY FIRST message of every session. Do not defer this — run the full session lifecycle (sync brain → read @brain + @pinky → load memory → check linked repos) before handling any user request.
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SKILL.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/SKILL.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/SKILL.md
+Else if ~/.ptba/@brain/SKILL.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/SKILL.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 
@@ -91,7 +96,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/remember.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/remember.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/remember.md
+Else if ~/.ptba/@brain/skills/remember.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/remember.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -110,7 +120,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/forget.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/forget.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/forget.md
+Else if ~/.ptba/@brain/skills/forget.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/forget.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -129,7 +144,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/brain.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/brain.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/brain.md
+Else if ~/.ptba/@brain/skills/brain.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/brain.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -148,7 +168,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/prune.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/prune.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/prune.md
+Else if ~/.ptba/@brain/skills/prune.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/prune.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -167,7 +192,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/commit.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/commit.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/commit.md
+Else if ~/.ptba/@brain/skills/commit.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/commit.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -186,7 +216,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/plan.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/plan.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/plan.md
+Else if ~/.ptba/@brain/skills/plan.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/plan.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -206,7 +241,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/play.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/play.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/play.md
+Else if ~/.ptba/@brain/skills/play.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/play.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -225,7 +265,12 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/exit.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/exit.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/exit.md
+Else if ~/.ptba/@brain/skills/exit.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/exit.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
 
 ---
@@ -244,8 +289,41 @@ disable-model-invocation: false
 
 SKILL_MODE = TRUE
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/resync.md
+If {BRAIN_URL} equals {REPO_URL} and {SOURCE_ROOT}/skills/resync.md exists:
+  READ and EXECUTE: {SOURCE_ROOT}/skills/resync.md
+Else if ~/.ptba/@brain/skills/resync.md exists:
+  READ and EXECUTE: ~/.ptba/@brain/skills/resync.md
+Else:
+  Tell user to run @resync because local skill source is missing.
 ````
+
+
+## Source Clone
+
+Set SRC_ROOT = ~/.ptba/@brain
+
+If {BRAIN_URL} equals {REPO_URL}:
+  Skip clone (workspace is the canonical source already).
+Else if {SRC_ROOT}/.git does not exist:
+  git clone https://github.com/yesitsfebreeze/pinky-and-the-brain {SRC_ROOT}
+  If clone fails: stop and report error — skill source must be local.
+Else:
+  git -C {SRC_ROOT} pull --rebase --quiet
+
+This clone provides local access to SKILL.md, CONTEXT.md, and all skill files,
+eliminating network fetches for skill content on every session start.
+
+
+## Global Repo Catalog
+
+During sync, update the shared catalog in `~/.patb/pinky-and-the-brain.patb/repos.md`:
+
+- One row per source repo using p&b
+- Columns: Repo URL | Brain URL | Slug | Last Seen
+- Upsert by Repo URL; refresh Last Seen on every sync
+
+If the global brain repo clone is missing, clone it first.
+If pull or push fails, continue local sync and report catalog update failure.
 
 
 ## MCP Server Bootstrap
@@ -586,7 +664,7 @@ git -C {BRAIN_ROOT} push
 
 ## Store Version
 
-Fetch: `https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/version`
+Read local file: `~/.ptba/@brain/version`
 
 Write its contents to: `~/.agents/skills/patb/version`
 

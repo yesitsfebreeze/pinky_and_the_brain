@@ -3,9 +3,29 @@
  */
 
 import simpleGit, { SimpleGit } from 'simple-git';
+import fs from 'node:fs';
+import path from 'node:path';
+
+function withDirContext(message: string, dir: string): string {
+  const resolvedDir = path.resolve(dir);
+  const cwd = process.cwd();
+  return `${message} (repoDir=${resolvedDir}, cwd=${cwd})`;
+}
+
+function ensureExistingDir(dir: string): string {
+  const resolvedDir = path.resolve(dir);
+  if (!fs.existsSync(resolvedDir)) {
+    throw new Error(withDirContext('Git repo directory does not exist', resolvedDir));
+  }
+  if (!fs.statSync(resolvedDir).isDirectory()) {
+    throw new Error(withDirContext('Git repo path is not a directory', resolvedDir));
+  }
+  return resolvedDir;
+}
 
 function git(dir: string): SimpleGit {
-  return simpleGit(dir);
+  const resolvedDir = ensureExistingDir(dir);
+  return simpleGit(resolvedDir);
 }
 
 /** Pull with rebase. Throws on merge conflict (caller should handle). */

@@ -2,7 +2,7 @@
 
 ## Version Check
 
-Fetch: `https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/version`
+Read local version file: `~/.ptba/@brain/version`
 
 Compare line 1 (version string) to local `~/.agents/skills/patb/version`.
 If local file is missing or version differs: run @resync, then continue.
@@ -11,7 +11,7 @@ If versions match: continue with normal session lifecycle.
 
 ## Load Context
 
-FETCH and READ: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/CONTEXT.md
+READ: `~/.ptba/@brain/CONTEXT.md`
 
 Resolve identity and set {SLUG}, BRAIN_ROOT, SOURCE_ROOT per CONTEXT.md.
 
@@ -265,44 +265,44 @@ QUERY PATH — full-pool concept-aware topic search:
 
 ### "@brain"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/brain.md
+READ and EXECUTE: `~/.ptba/@brain/skills/brain.md`
 
 ### "@remember <that...>"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/remember.md
+READ and EXECUTE: `~/.ptba/@brain/skills/remember.md`
 
 ### "@forget <about...>"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/forget.md
+READ and EXECUTE: `~/.ptba/@brain/skills/forget.md`
 
 ### "@prune"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/prune.md
+READ and EXECUTE: `~/.ptba/@brain/skills/prune.md`
 
 
 ### "@play"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/play.md
+READ and EXECUTE: `~/.ptba/@brain/skills/play.md`
 
 
 ### "@plan" / "@exit"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/plan.md
+READ and EXECUTE: `~/.ptba/@brain/skills/plan.md`
 
 
 ### "@exit"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/exit.md
+READ and EXECUTE: `~/.ptba/@brain/skills/exit.md`
 
 
 ### "@resync"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/resync.md
+READ and EXECUTE: `~/.ptba/@brain/skills/resync.md`
 
 
 ### "@commit"
 
-FETCH and EXECUTE: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/skills/commit.md
+READ and EXECUTE: `~/.ptba/@brain/skills/commit.md`
 
 
 ## After Reasoning

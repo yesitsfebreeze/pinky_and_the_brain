@@ -33,12 +33,23 @@ import {
   getChangesResource,
   getPlanResource,
 } from './resources.js';
+import { accessLogPath, logAccess } from './lib/access-log.js';
 
 // ---------------------------------------------------------------------------
 // Bootstrap
 // ---------------------------------------------------------------------------
 
 const config = resolveConfig();
+logAccess('server.start', {
+  cwd: process.cwd(),
+  sourceRoot: config.sourceRoot,
+  brainRoot: config.brainRoot,
+  accessLog: accessLogPath(),
+});
+
+function errorContext(): string {
+  return `cwd=${process.cwd()}, sourceRoot=${config.sourceRoot}, brainRoot=${config.brainRoot}`;
+}
 
 const server = new Server(
   { name: 'patb', version: '1.0.0' },
@@ -109,7 +120,7 @@ const TOOLS = [
   },
   {
     name: 'sync',
-    description: 'Pull --rebase the brain repo, push any local changes, and auto-migrate notes missing created/last_used dates.',
+    description: 'Pull --rebase the brain repo, push any local changes, auto-migrate notes missing created/last_used dates, and upsert the global repos.md catalog.',
     inputSchema: { type: 'object', properties: {} },
   },
   {
@@ -149,6 +160,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params;
+  logAccess('tool.call', {
+    tool: name,
+    cwd: process.cwd(),
+    sourceRoot: config.sourceRoot,
+    brainRoot: config.brainRoot,
+  });
 
   try {
     let result: unknown;
@@ -178,15 +195,38 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
         result = await planComplete(config, args as unknown as Parameters<typeof planComplete>[1]);
         break;
       default:
+        logAccess('tool.error', {
+          tool: name,
+          error: `Unknown tool: ${name}`,
+          cwd: process.cwd(),
+          sourceRoot: config.sourceRoot,
+          brainRoot: config.brainRoot,
+        });
         return {
           content: [{ type: 'text', text: `Unknown tool: ${name}` }],
           isError: true,
         };
     }
+    logAccess('tool.success', {
+      tool: name,
+      cwd: process.cwd(),
+      sourceRoot: config.sourceRoot,
+      brainRoot: config.brainRoot,
+    });
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    return { content: [{ type: 'text', text: `Error: ${message}` }], isError: true };
+    logAccess('tool.error', {
+      tool: name,
+      error: message,
+      cwd: process.cwd(),
+      sourceRoot: config.sourceRoot,
+      brainRoot: config.brainRoot,
+    });
+    return {
+      content: [{ type: 'text', text: `Error: ${message} [${errorContext()}]` }],
+      isError: true,
+    };
   }
 });
 
@@ -205,6 +245,12 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => ({ resources: R
 
 server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
   const { uri } = req.params;
+  logAccess('resource.read', {
+    uri,
+    cwd: process.cwd(),
+    sourceRoot: config.sourceRoot,
+    brainRoot: config.brainRoot,
+  });
   let resource;
   switch (uri) {
     case 'patb://thoughts': resource = await getThoughtsResource(config); break;
@@ -224,10 +270,22 @@ server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
+  logAccess('server.ready', {
+    cwd: process.cwd(),
+    sourceRoot: config.sourceRoot,
+    brainRoot: config.brainRoot,
+  });
   // Server runs until process exits
 }
 
 main().catch((err) => {
-  process.stderr.write(`Fatal: ${err instanceof Error ? err.message : String(err)}\n`);
+  const message = err instanceof Error ? err.message : String(err);
+  logAccess('server.fatal', {
+    error: message,
+    cwd: process.cwd(),
+    sourceRoot: config.sourceRoot,
+    brainRoot: config.brainRoot,
+  });
+  process.stderr.write(`Fatal: ${message} [${errorContext()}]\n`);
   process.exit(1);
 });

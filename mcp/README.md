@@ -10,7 +10,7 @@ MCP server for Pinky & The Brain — provides typed tool calls and resource acce
 | `forget(query)` | Search + remove matching notes |
 | `query(topic, depth?)` | Search thoughts.md + linked repos with concept expansion |
 | `prune(threshold?)` | Remove notes below threshold |
-| `sync()` | Pull brain repo, rebase, push |
+| `sync()` | Pull brain repo, rebase, push, and upsert global `repos.md` catalog |
 | `plan_add(todo)` | Add a todo below the @plan separator |
 | `plan_next()` | Return the next highest-impact todo |
 | `plan_complete(todo)` | Mark a todo done and remove it |
@@ -73,6 +73,8 @@ Windows:
 ```
 
 Once the server is running, all p&b commands (`remember`, `forget`, `query`, `prune`, `sync`, `plan_*`) use typed MCP tool calls instead of writing markdown directly. The AI skill remains active as a fallback when MCP is unavailable.
+
+`sync()` also maintains a global catalog at `~/.patb/pinky-and-the-brain.patb/repos.md` with one row per source repo using p&b.
 
 ## Structure
 

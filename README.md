@@ -1,6 +1,10 @@
 ---
-SKILL_URL:         https://github.com/yesitsfebreeze/pinky-and-the-brain/SKILL.md
+PROVIDER:          https://github.com
+BRAIN_SLUG:        yesitsfebreeze/pinky-and-the-brain
+BRAIN_URL:         {PROVIDER}{BRAIN_SLUG}
+SKILL_URL:         {BRAIN_URL}/SKILL.md
 REPO_URL:          https://github.com/{USER}/{REPO}  # can be inferred from `git remote get-url origin`
+RAW_URL:           https://raw.githubusercontent.com/{BRAIN_SLUG}
 PATB_URL:          https://github.com/{USER}/{REPO}.patb  # optional — partial override; {USER} and {REPO} fall back to REPO_URL values (e.g. different user, same name: https://github.com/other-user/{REPO}.patb)
 MAX_NOTES:         512
 MIN_RATING:        300
@@ -58,7 +62,7 @@ Read the frontmatter config at the top of this file. If any required field still
 DRY_RUN = TRUE
 -->
 
-Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
+Fetch and execute: {RAW_URL}/SETUP.md
 
 ## Resync
 
@@ -68,7 +72,7 @@ paste this into an AI chat to force a full re-install from latest main:
 
 ```
 RESYNC = TRUE
-Fetch and execute: https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/SETUP.md
+Fetch and execute: {RAW_URL}/SETUP.md
 
 This is a (re)install over the existing setup.
 Preserve all user content: thoughts.md, changes.md, tree.md, sync.md, @pinky linked repos, @plan (create if missing).
@@ -190,9 +194,11 @@ p&b ships an optional MCP server that lets AI assistants call typed tool functio
 ### How it's installed
 
 The p&b installer (`SETUP.md`) handles everything automatically when `node` and `npm` are in PATH:
-1. Copies `mcp/` to `~/.agents/skills/patb/mcp/`
-2. Runs `npm install && npm run build`
-3. Writes `.vscode/mcp.json` to your project root (if not already present)
+1. Uses local workspace skill files directly when `{BRAIN_URL} == {REPO_URL}` (self-hosted mode)
+2. Otherwise keeps a local clone at `~/.ptba/@brain/` for fast reads
+3. Copies `mcp/` to `~/.agents/skills/patb/mcp/`
+4. Runs `npm install && npm run build`
+5. Writes `.vscode/mcp.json` to your project root (if not already present)
 
 To rebuild manually after `@resync` or a manual clone:
 ```sh
@@ -238,10 +244,12 @@ npm install && npm run build
 | `forget(query, confirmed?, ids?)` | Search + optionally remove matching notes |
 | `query(query, maxResults?)` | Ranked note lookup with concept expansion |
 | `prune(dryRun?)` | Remove notes below PRUNE_THRESHOLD |
-| `sync()` | Pull --rebase brain repo and push |
+| `sync()` | Pull --rebase brain repo and push; upsert global repo catalog (`repos.md`) |
 | `plan_add(todo)` | Append a todo below the @plan separator |
 | `plan_next()` | Return the next pending todo |
 | `plan_complete(todo)` | Remove a completed todo by text match |
+
+Global repo catalog location: `~/.patb/pinky-and-the-brain.patb/repos.md`
 
 ### Resources
 

@@ -2,7 +2,7 @@
 
 ## Version Check
 
-Fetch: `https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/version`
+Read local version file: `~/.ptba/@brain/version`
 Compare line 1 to local `~/.agents/skills/patb/version`.
 If missing or differs: run @resync, then continue.
 

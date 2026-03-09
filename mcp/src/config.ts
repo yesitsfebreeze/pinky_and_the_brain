@@ -102,7 +102,7 @@ function strArr(v: unknown): string[] {
  * Suitable for use at MCP server startup.
  */
 export function resolveConfig(sourceRoot?: string): PatbConfig {
-  const root = sourceRoot ?? process.env['PATB_SOURCE_ROOT'] ?? process.cwd();
+  const root = path.resolve(sourceRoot ?? process.env['PATB_SOURCE_ROOT'] ?? process.cwd());
 
   // Step 1: Read @pinky to get the preliminary brain repo URL
   const pinkyPath = path.join(root, '@pinky');
