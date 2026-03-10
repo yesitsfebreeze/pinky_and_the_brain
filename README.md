@@ -1,278 +1,42 @@
----
-PROVIDER:          https://github.com
-BRAIN_SLUG:        yesitsfebreeze/pinky-and-the-brain
-BRAIN_URL:         {PROVIDER}{BRAIN_SLUG}
-SKILL_URL:         {BRAIN_URL}/SKILL.md
-REPO_URL:          https://github.com/{USER}/{REPO}  # can be inferred from `git remote get-url origin`
-RAW_URL:           https://raw.githubusercontent.com/{BRAIN_SLUG}
-PATB_URL:          https://github.com/{USER}/{REPO}.patb  # optional — partial override; {USER} and {REPO} fall back to REPO_URL values (e.g. different user, same name: https://github.com/other-user/{REPO}.patb)
-MAX_NOTES:         512
-MIN_RATING:        300
-PRUNE_THRESHOLD:   300   # minimum rating to survive a prune pass (default: same as MIN_RATING)
-MAX_CONTEXT_NOTES: 8     # max notes loaded into prompt per session
-MAX_CONTEXT_FILES: 5     # max tree.md entries surfaced per session
-MAX_LINKED_REPOS:  3     # max linked brain repos queried per session
-CONTEXT_DEPTH:     2     # max concept-link hops during query expansion
-# avoid:
-#   - "store unrelated data"
-# follow:
-#   - "generate todos for ideas display them to the user when he types @todo"
----
-
 # 🧠 Pinky & The Brain
 
-Persistent cross-project AI memory for AI coding assistants.
-
-## How It Works
-
-Each project gets a companion `.patb` brain repo that stores AI memory — decisions, pitfalls, conventions, and cross-project context — so your AI assistant remembers things across sessions.
-
-{SOURCE_ROOT}
-```
-┌ my-project/ 
-├── @pinky
-├── @plan
-└── **/*.*
-```
-automatic ai sync into:
-
-{BRAIN_ROOT}
-```
-┌ ~/.patb/my-project.patb/ 
-├── @brain
-├── thoughts.md
-├── tree.md
-├── changes.md
-└── sync.md
-```
-
-## Path Truth Table
-
-Always treat these as canonical:
-
-| Symbol | Location | Notes |
-|---|---|---|
-| `SOURCE_ROOT` | workspace repo root | contains `@pinky` and `@plan` |
-| `BRAIN_ROOT` | `~/.patb/{SLUG}.patb/` | contains `@brain`, `thoughts.md`, `tree.md`, `changes.md`, `sync.md` |
-| global catalog root | `~/.patb/@brain/` | catalog-only repo, not the active project brain |
-
-Never assume `@brain` exists in the workspace repo root. It lives under `~/.patb/...`.
+Persistent AI memory that lives in your repo. One URL. Zero config.
 
 ## Install
 
-1. Paste this file into an AI chat
-
-If the workspace has a git remote, `REPO_URL` is inferred automatically via `git remote get-url origin`.
-Otherwise, fill in `REPO_URL` in the frontmatter above before pasting.
-If the `.patb` brain repo doesn't exist on your remote yet, the AI will ask if you want to create and push it.
-The AI will fetch the installer and set everything up automatically.
-
-Read the frontmatter config at the top of this file. If any required field still contains a
-{PLACEHOLDER}, stop and ask the user to fill it in before continuing.
-
-<!-- Uncomment for dry run:
-DRY_RUN = TRUE
--->
-
-Fetch and execute: {RAW_URL}/SETUP.md
-
-## Resync
-
-If a project's p&b setup is broken or too far behind to self-update
-(e.g. missing update mechanism, corrupted skill, desynced branch),
-paste this into an AI chat to force a full re-install from latest main:
+Tell your AI agent:
 
 ```
-RESYNC = TRUE
-Fetch and execute: {RAW_URL}/SETUP.md
-
-This is a (re)install over the existing setup.
-Preserve all user content: thoughts.md, changes.md, tree.md, sync.md, @pinky linked repos, @plan (create if missing).
-Overwrite everything else (skill, instructions, @brain structure, MCP server).
+Follow instructions in https://raw.githubusercontent.com/yesitsfebreeze/pinky-and-the-brain/refs/heads/main/pinky.brain
 ```
 
-## Commands
+That's it. The agent will:
+1. Fetch `pinky.brain` and save it to your project root
+2. Create `.pinky/` with the required data files
+3. Add `.pinky/` to `.gitignore`
+4. Start remembering
 
-| Command                    | What it does                       |
-|----------------------------|---------------------------------|
-| "what do you know about X" | Search thoughts.md + linked repos  |
-| `@remember <that...>`      | Rate + store note, commit & push   |
-| `@forget <about...>`       | Search for matching notes, confirm, remove, commit & push |
-| `@brain`                   | List all brain repos + note counts; show all notes for a specific slug |
-| `@prune`                   | Remove all notes below PRUNE_THRESHOLD, commit & push |
-| `@commit`                  | Group changes by scope, create per-scope commits, push → triggers .patb indexing |
-| `@plan`                    | Enter plan mode — each message is silently captured into `@plan` above the separator |
-| `@play`                    | Exit plan mode and pick the most impactful next todo from `@plan`, gather context, solve it, delete the todo, and commit |
-| `@exit`                    | Exit plan mode or play mode and return to normal conversation |
-| `@resync`                  | Re-install p&b from latest main, preserving all user content |
+Works with any AI coding assistant that can read URLs and write files.
 
-## File Formats
+## What It Does
 
-All memory files live in `{BRAIN_ROOT}` (`~/.patb/{SLUG}.patb/`):
+- **Rules** — Coding preferences that persist across sessions
+- **Ideas** — Things to build, scored by relevance + impact
+- **Notes** — Discovered context, auto-decayed by freshness
+- **Todos** — Tracked tasks with priority scoring
+- **Files** — Registry of important files in your project
 
-**@brain** — project identity + config
+## Multi-Repo
+
+Each subfolder can have its own `.pinky/` — monorepos, submodules, vendor packages.
+Add external brain repos to the SOURCES section in `pinky.brain`:
+
 ```
----
-Each setting from the yaml configuration
----
-
-<!-- main-brain-origin-source-url: {URL} -->
-# Title
-Description
+@https://github.com/org/shared-standards.git
+@https://github.com/org/team-conventions.git
 ```
 
+## Branch Isolation
 
-**{SOURCE_ROOT}/@pinky**
-```
-Public `.patb` repo links only
-Line 1: this project's own brain repo URL ({SLUG}.patb) (always itself)
-Lines 2+: linked brain repo URLs
-STATUS: plan|play|idle   # active mode — written by @plan/@play, cleared by @exit
-```
-
-**{SOURCE_ROOT}/@plan**
-```
-Freeform ideas/notes (above the thick separator ████)
-████████████████████
-AI-generated todos (below the separator — managed by @play)
-```
-
-**thoughts.md** — rated note pool (highest first)
-```
-#### Short title
-<!-- rating: 85 | created: 2026-01-01 | last_used: 2026-03-01 | concepts: tag1, tag2 -->
-<!-- sources: src/foo.ts -->
-Body text.
-```
-The `sources` line and `concepts` field are optional; omit when not applicable.
-
-**tree.md** — file impact map
-```
-| File | Access Rate (1–10) | Line Count | Impact (1–10) | Notes |
-```
-
-**changes.md** — cross-project changelog (newest first, cap 20)
-```
-#### 2026-03-08 — Short title
-1–2 sentence body.
-```
-
-**sync.md** — last indexed state
-```
-SOURCE_BRANCH: main
-SOURCE_HEAD: {HASH}
-INDEXED_AT: {ISO-8601}
-```
-
-## Context Loading
-
-At session start the full note pool in `thoughts.md` is processed in two passes before anything is loaded into the AI prompt:
-
-1. **Prune** — Notes whose rating has fallen below `PRUNE_THRESHOLD` are deleted from `thoughts.md` and logged in `changes.md`.
-2. **Selection** — The surviving notes are ranked by relevance (base rating + recency bonus if used within 7 days + repo-match bonus if its sources exist in the current workspace). The top `MAX_CONTEXT_NOTES` notes are loaded into the session; the rest remain in the pool for future prune cycles but are not included in the prompt.
-
-For explicit queries (`"what do you know about X"`) the full pool is searched instead of limiting to `MAX_CONTEXT_NOTES`.
-
-| Config key | Default | Effect |
-|---|---|---|
-| `PRUNE_THRESHOLD` | `MIN_RATING` | Minimum rating to survive a prune pass |
-| `MAX_CONTEXT_NOTES` | `8` | Max notes loaded into a session prompt |
-| `MAX_CONTEXT_FILES` | `5` | Max `tree.md` entries surfaced per session |
-| `MAX_LINKED_REPOS` | `3` | Max linked brain repos queried per session |
-
-## Concept Graph
-
-Every note can carry 1–3 concept tags in its `concepts` field (see `thoughts.md` format above). Tags are assigned automatically when a note is stored via `remember` or created during catch-up indexing after a source push.
-
-All tags are aggregated into `concepts.md` (auto-generated — never edit manually):
-
-**concepts.md**
-```
-#### {concept-tag}
-<!-- related: tag1, tag2 -->   ← other tags that co-occur with this one
-<!-- files: src/foo.ts -->      ← union of sources across all notes with this tag
-<!-- repos: other-project -->   ← only present when tag appears in a linked repo
-```
-
-When you query `"what do you know about X"`, the skill does a concept-match pass before scoring notes by text: it finds every tag matching X, then walks the `related` links up to `CONTEXT_DEPTH` hops. Notes tagged with any matched concept receive a topic-score bonus and appear in results even when the literal query text is absent from their body.
-
-| Config key | Default | Effect |
-|---|---|---|
-| `CONTEXT_DEPTH` | `2` | Maximum concept-link hops during query expansion |
-
-## MCP Server
-
-p&b ships an optional MCP server that lets AI assistants call typed tool functions instead of writing raw markdown. Once installed, the skill automatically uses MCP tools when they are available — falling back to markdown-direct if the server is not running.
-
-### How it's installed
-
-The p&b installer (`SETUP.md`) handles everything automatically when `node` and `npm` are in PATH:
-1. Uses local workspace skill files directly when `{BRAIN_URL} == {REPO_URL}` (self-hosted mode)
-2. Ensures `~/.patb/@brain/` is synced before skill execution and uses it as the local source
-3. Copies `mcp/` to `~/.agents/skills/patb/mcp/`
-4. Runs `npm install && npm run build`
-5. Writes `.vscode/mcp.json` to your project root (if not already present)
-
-To rebuild manually after `@resync` or a manual clone:
-```sh
-cd ~/.agents/skills/patb/mcp
-npm install && npm run build
-```
-
-### `.vscode/mcp.json`
-
-**Unix / macOS**
-```json
-{
-  "servers": {
-    "patb": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${env:HOME}/.agents/skills/patb/mcp/dist/index.js"],
-      "env": { "PATB_SOURCE_ROOT": "${workspaceFolder}" }
-    }
-  }
-}
-```
-
-**Windows**
-```json
-{
-  "servers": {
-    "patb": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${env:USERPROFILE}/.agents/skills/patb/mcp/dist/index.js"],
-      "env": { "PATB_SOURCE_ROOT": "${workspaceFolder}" }
-    }
-  }
-}
-```
-
-### Tools
-
-| Tool | Description |
-|---|---|
-| `remember(title, body, rating, concepts?, sources?)` | Store a note into thoughts.md, commit & push |
-| `forget(query, confirmed?, ids?)` | Search + optionally remove matching notes |
-| `query(query, maxResults?)` | Ranked note lookup with concept expansion |
-| `prune(dryRun?)` | Remove notes below PRUNE_THRESHOLD |
-| `sync()` | Pull --rebase brain repo and push; upsert global repo catalog (`repos.md`) |
-| `plan_add(todo)` | Append a todo below the @plan separator |
-| `plan_next()` | Return the next pending todo |
-| `plan_complete(todo)` | Remove a completed todo by text match |
-
-Global repo catalog location: `~/.patb/pinky-and-the-brain.patb/repos.md`
-
-### Resources
-
-| URI | Description |
-|---|---|
-| `patb://thoughts` | Full rated note pool (thoughts.md) |
-| `patb://tree` | File impact map (tree.md) |
-| `patb://changes` | Changelog (changes.md) |
-| `patb://plan` | Current @plan contents |
-
-### Skill fallback
-
-The AI skill (`SKILL.md`) remains the primary install mechanism and always-active fallback. If the MCP server is not running or `node` is unavailable, every command falls back to markdown-direct reads/writes with no loss of functionality.
+Memory data lives on a separate orphan branch (`pinky`).
+Your working branches stay clean — no `.brain` files in your commits.

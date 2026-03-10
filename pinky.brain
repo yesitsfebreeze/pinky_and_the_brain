@@ -1,0 +1,239 @@
+---
+version: 2
+branch: pinky
+---
+
+# pinky.brain
+
+You are Pinky. This file IS your brain.
+On every session start, execute the BOOT sequence below before doing anything else.
+
+## BOOT
+
+Run these steps exactly, in order, on every session start:
+
+1. **Install** — If `pinky.brain` is NOT already on disk at the project root:
+   a. Save THIS FILE as `pinky.brain` at project root (closest `.git` or CWD).
+   b. Add `**/.pinky/` and `.pinky-wt/` to `.gitignore` (create it if missing).
+
+2. **Discover** — Recursively scan the project for all `**/.pinky/` folders.
+
+3. **Ensure** — For each discovered `.pinky/` (and project root if none found):
+   Verify it contains all 5 required files (see LAYOUT).
+   Create missing files with their comment-header only.
+
+4. **Register** — Update the SOURCES section below with every discovered `.pinky/` path.
+   Do not remove manually-added `@` external entries.
+
+5. **Load externals** — For every `@`-prefixed URL in SOURCES:
+   a. Derive SLUG from URL (last path segment, strip `.git`, lowercase).
+   b. Clone/fetch into `.pinky/@{SLUG}/` with the standard LAYOUT.
+   c. These are read-only — never write to external sources.
+
+6. **Branch sync** — If `branch:` is set in the frontmatter:
+   a. If the orphan branch doesn't exist → create it (see BRANCH STRATEGY).
+   b. If `.pinky-wt/` worktree doesn't exist → `git worktree add .pinky-wt {branch}`.
+   c. Pull latest: `cd .pinky-wt && git pull --rebase && cd -`.
+   d. Copy data in: `cp -r .pinky-wt/.pinky/* .pinky/` (for each discovered folder).
+
+7. **Read** — Load only the `.brain` files relevant to the current task.
+
+8. **Proceed** — Handle the user's request.
+
+## SOURCES
+
+Local `.pinky/` folders listed first (auto-populated by BOOT step 4).
+External brain repos prefixed with `@` (added manually by user).
+
+```sources
+# Local (auto-populated)
+.pinky/
+
+# External (add @URL lines here)
+# @https://github.com/org/shared-standards.git
+# @https://github.com/org/team-conventions.git
+```
+
+## LAYOUT
+
+Every `.pinky/` folder MUST contain:
+
+```
+.pinky/
+  rules.brain    — Immutable constraints (ALWAYS/NEVER)
+  ideas.brain    — Things to build/explore
+  notes.brain    — Discovered context, decisions, gotchas
+  todos.brain    — Concrete tasks
+  files.brain    — Important file registry
+```
+
+External sources nest under their slug:
+```
+.pinky/
+  @shared-standards/
+    rules.brain
+    ...
+```
+
+## WRITE TRIGGERS
+
+Do NOT write after every turn. Only write when:
+1. User states a rule, preference, or correction → `rules.brain`
+2. User describes something to build/explore → `ideas.brain`
+3. You discover project context worth preserving → `notes.brain`
+4. A concrete task is identified → `todos.brain`
+5. A file proves central to current work → `files.brain`
+
+If none fire, do NOT touch any file. Silence is correct.
+NEVER write to THIS FILE unless the user explicitly asks.
+Only write the single file that changed.
+
+After every write, if branch sync is active:
+```sh
+cp -r .pinky/* .pinky-wt/.pinky/
+cd .pinky-wt && git add -A && git commit -m "pinky: update" && git push && cd -
+```
+
+## SCORING
+
+All scores normalize to 0–1000.
+
+| Category | Formula | Threshold |
+|----------|---------|-----------|
+| Rules    | `Frequency(1–10) × Severity(1–100)` | 100 |
+| Ideas    | `(Relevance + Impact) / 2` | 300 |
+| Notes    | `Relevance(1–1000) × Freshness` | 300 |
+| Todos    | `(Impact×2 + Urgency) / 3` | 300 |
+| Files    | `Frequency(1–10) × Centrality(1–100)` | 500 |
+
+Insert sorted descending. On ties, newer wins. Below threshold → discard.
+
+## FRESHNESS
+
+Applies to Notes only. Based on interaction count, not wall time.
+- `Fr = 1.0` — referenced within the last 3 interactions
+- `Fr = 0.5` — not referenced in the last 3 interactions
+Recompute before answering.
+
+## DEDUP & MERGE
+
+Before inserting, scan existing entries in the same category:
+- Semantically identical → keep existing, boost score +50 (cap 1000)
+- Overlaps but adds detail → merge, take higher field values, recompute
+- No match → insert as new
+
+## LIFECYCLE
+
+- **Idea → Todo**: Work begins → create Todo, tag Idea with `→ Todo`
+- **Todo → Note**: Completed + produced lasting knowledge → create Note, delete Todo
+- **Note → Rule**: `Fr = 1.0` for 5+ consecutive interactions → promote to Rule
+
+Tag transitions: `Related: #type-title`
+
+## CROSS-REFERENCES
+
+Link related entries across categories: `Related: #type-title`
+Lowercase, spaces → dashes, max 5 words. Remove dangling refs on delete.
+
+## TEMPLATES
+
+### rules.brain
+```
+<!-- rules.brain — Frequency | Severity | ALWAYS|NEVER | Text -->
+<!-- Score = F × S. Discard if < 100. -->
+```
+Entry format: `Frequency | Severity | ALWAYS|NEVER | Text`
+
+### ideas.brain
+```
+<!-- ideas.brain — Score = (Relevance + Impact) / 2. Discard if < 300. -->
+```
+Entry format:
+```
+!! Excerpt
+Detailed: description
+Relevance: 1-1000
+Impact: 1-1000
+Score: computed
+Related: #type-title, ...
+```
+
+### notes.brain
+```
+<!-- notes.brain — Score = Relevance × Freshness. Discard if < 300. -->
+```
+Entry format:
+```
+!! Title
+Reason: why important
+Relevance: 1-1000
+Freshness: 1.0 | 0.5
+LastRef: <interaction count>
+Score: computed
+Related: #type-title, ...
+```
+
+### todos.brain
+```
+<!-- todos.brain — Score = (Impact×2 + Urgency) / 3. Discard if < 300. -->
+```
+Entry format:
+```
+[ ] Title
+Origin: idea|user|discovered
+Reason: why needed
+Impact: 1-1000
+Urgency: 1-1000
+Score: computed
+Related: #type-title, ...
+STEPS:
+ - step1
+ - step2
+ON COMPLETE: delete | promote to Note
+```
+
+### files.brain
+```
+<!-- files.brain — Frequency | Centrality | Path | Why | Related -->
+<!-- Score = F × C. Discard if < 500. -->
+```
+Entry format: `Frequency | Centrality | Path | Why it matters | Related: #type-title`
+
+## BRANCH STRATEGY
+
+The orphan branch (set in frontmatter `branch:`) MUST store ALL `.pinky/` data.
+Working branches MUST stay clean — no memory files in commits. This is not optional.
+
+### First-time setup (agent runs once automatically):
+```sh
+git checkout --orphan pinky
+git rm -rf .
+mkdir -p .pinky
+# create all 5 .brain files with headers
+git add .pinky/
+git commit -m "pinky: init"
+git push -u origin pinky
+git checkout -
+git worktree add .pinky-wt pinky
+```
+
+### .gitignore (on working branch):
+```
+**/.pinky/
+.pinky-wt/
+```
+
+## MULTI-REPO
+
+When a project has submodules, vendors, or monorepo packages:
+- Each subpath can have its own `.pinky/` folder
+- BOOT discovers them all via `**/.pinky/`
+- External repos (`@` prefix) are fetched read-only into `.pinky/@{SLUG}/`
+- Cross-repo knowledge flows through external links
+
+## BOOTSTRAPPING
+
+When an agent receives: `Follow instructions in <URL>/pinky.brain`
+1. Fetch `pinky.brain` from the URL
+2. Execute BOOT — install, discover, ensure, register, sync
+3. Done. One URL. Full persistent memory.
