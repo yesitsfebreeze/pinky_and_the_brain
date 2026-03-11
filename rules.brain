@@ -1,0 +1,2 @@
+<!-- rules.brain — Frequency | Severity | ALWAYS|NEVER | Text -->
+<!-- Score = F × S. Discard if < 100. -->
