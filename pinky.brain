@@ -1,5 +1,5 @@
 ---
-version: 3
+version: 4
 branch: pinky
 ---
 
@@ -14,7 +14,7 @@ Run these steps exactly, in order, on every session start:
 
 0. **Version gate** — If ALL of the following are true, skip to step 8 (Read):
    - `pinky.brain` exists at project root.
-   - `.pinky/` exists and contains all 5 required `.brain` files.
+   - `.pinky/` exists and contains all 6 required `.brain` files.
    - If `branch:` is set: `.pinky/.git` is a file (worktree is intact).
    This is a fast path — the brain is already installed and up to date.
 
@@ -25,7 +25,7 @@ Run these steps exactly, in order, on every session start:
 2. **Discover** — Recursively scan the project for all `**/.pinky/` folders.
 
 3. **Ensure** — For each discovered `.pinky/` (and project root if none found):
-   Verify it contains all 5 required files (see LAYOUT).
+   Verify it contains all 6 required files (see LAYOUT).
    Create missing files with their comment-header only.
 
 4. **Register** — Update the SOURCES section below with every discovered `.pinky/` path.
@@ -33,8 +33,14 @@ Run these steps exactly, in order, on every session start:
 
 5. **Load externals** — For every `@`-prefixed URL in SOURCES:
    a. Derive SLUG from URL (last path segment, strip `.git`, lowercase).
-   b. Clone/fetch into `.pinky/@{SLUG}/` with the standard LAYOUT.
-   c. These are read-only — never write to external sources.
+   b. Check if the remote repo has a `pinky` branch:
+      `git ls-remote --heads <URL> pinky`
+      - If found → clone/fetch only the `pinky` branch into `.pinky/@{SLUG}/`:
+        `git clone --single-branch --branch pinky <URL> .pinky/@{SLUG}`
+        (or `cd .pinky/@{SLUG} && git fetch origin pinky && git reset --hard origin/pinky`)
+      - If not found → clone the default branch, then look for `.brain` files in the repo root.
+   c. The `.brain` files (and `overview.brain`) live on the `pinky` branch — this is the convention.
+   d. These are read-only — never write to external sources.
 
 6. **Branch sync** — If `branch:` is set in the frontmatter:
    a. If the orphan branch doesn't exist → create it (see BRANCH STRATEGY below).
@@ -92,6 +98,7 @@ Every `.pinky/` folder MUST contain:
 
 ```
 .pinky/
+  overview.brain — Project overview & prominent features
   rules.brain    — Immutable constraints (ALWAYS/NEVER)
   ideas.brain    — Things to build/explore
   notes.brain    — Discovered context, decisions, gotchas
@@ -103,9 +110,14 @@ External sources nest under their slug:
 ```
 .pinky/
   @shared-standards/
+    overview.brain
     rules.brain
     ...
 ```
+
+> **External repos**: Linked repos (`@` prefix) are expected to store their
+> `.brain` files on a `pinky` orphan branch — the same convention used locally.
+> When loading an external source, always check for the `pinky` branch first.
 
 ## WRITE TRIGGERS
 
@@ -115,6 +127,7 @@ Do NOT write after every turn. Only write when:
 3. You discover project context worth preserving → `notes.brain`
 4. A concrete task is identified → `todos.brain`
 5. A file proves central to current work → `files.brain`
+6. Project scope, purpose, or key features change → `overview.brain`
 
 If none fire, do NOT touch any file. Silence is correct.
 NEVER write to THIS FILE unless the user explicitly asks.
@@ -148,7 +161,7 @@ git clean -fd --quiet
 
 # 2. Restore saved .brain files or create defaults
 cp "$tmpdir"/*.brain . 2>/dev/null || \
-  for f in rules ideas notes todos files; do echo "# ${f}.brain" > "${f}.brain"; done
+  for f in overview rules ideas notes todos files; do echo "# ${f}.brain" > "${f}.brain"; done
 git add -A && git commit -m "pinky: init brain"
 popd
 
@@ -183,6 +196,7 @@ All scores normalize to 0–1000.
 | Notes    | `Relevance(1–1000) × Freshness` | 300 |
 | Todos    | `(Impact×2 + Urgency) / 3` | 300 |
 | Files    | `Frequency(1–10) × Centrality(1–100)` | 500 |
+| Overview | Written once, updated on major scope changes | — |
 
 Insert sorted descending. On ties, newer wins. Below threshold → discard.
 
@@ -277,6 +291,31 @@ ON COMPLETE: delete | promote to Note
 ```
 Entry format: `Frequency | Centrality | Path | Why it matters | Related: #type-title`
 
+### overview.brain
+```
+<!-- overview.brain — Project overview and prominent features. -->
+<!-- Updated when project scope, purpose, or key features change. -->
+```
+Entry format (free-form markdown):
+```
+# Project Name
+
+One-line description of the project.
+
+## Purpose
+Why this project exists.
+
+## Key Features
+- Feature 1 — brief explanation
+- Feature 2 — brief explanation
+
+## Architecture
+High-level structure (optional, keep brief).
+
+## Status
+Current phase: planning | active | maintenance
+```
+
 ## BRANCH STRATEGY
 
 The orphan branch (set in frontmatter `branch:`) MUST store ALL `.pinky/` data.
@@ -287,7 +326,7 @@ Working branches MUST stay clean — no memory files in commits. This is not opt
 ```sh
 git checkout --orphan pinky
 git rm -rf .
-# create all 5 .brain files with headers (directly in repo root, they live at .pinky/ in the worktree)
+# create all 6 .brain files with headers (directly in repo root, they live at .pinky/ in the worktree)
 git add .
 git commit -m "pinky: init"
 git push -u origin pinky
@@ -309,7 +348,11 @@ When a project has submodules, vendors, or monorepo packages:
 - Each subpath can have its own `.pinky/` folder
 - BOOT discovers them all via `**/.pinky/`
 - External repos (`@` prefix) are fetched read-only into `.pinky/@{SLUG}/`
+- **External repos MUST use a `pinky` orphan branch** to store their `.brain` files.
+  This is the same convention used locally — the `pinky` branch is the canonical
+  location for all brain data. When linking a repo, the agent checks for this branch first.
 - Cross-repo knowledge flows through external links
+- `overview.brain` from external sources gives quick context about the linked project
 
 ## COMMANDS
 
@@ -340,7 +383,7 @@ Self-update and self-analysis. Run these steps in order:
       entries. Merge or discard per DEDUP & MERGE rules.
    d. **Dangling refs** — Find `Related:` links that point to deleted entries.
       Remove them.
-   e. **Layout check** — Confirm all 5 files exist with correct headers.
+   e. **Layout check** — Confirm all 6 files exist with correct headers.
       Recreate any missing files.
    f. **Template conformance** — Verify entries match the TEMPLATES format.
       Flag malformed entries.
