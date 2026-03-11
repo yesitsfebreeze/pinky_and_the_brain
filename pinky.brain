@@ -1,5 +1,5 @@
 ---
-version: 4
+version: 5
 branch: pinky
 ---
 
@@ -74,7 +74,13 @@ Run these steps exactly, in order, on every session start:
    e. If the user's repo contains the raw-URL bootstrap line (`Follow instructions in https://…/pinky.brain`), ask: "The external bootstrap URL is no longer needed since pinky.brain is local. Want me to replace it with a pointer to the local file?"
       If approved, replace that line with: `Follow instructions in pinky.brain`
 
-8. **Read** — Load only the `.brain` files relevant to the current task.
+8. **Read** — Load brain files using category-based resolution:
+   a. Start with root `.pinky/` — load the `.brain` files relevant to the current task.
+   b. For each sub-`.pinky/` discovered in step 2, read its `overview.brain`
+      to determine if that sub-brain is relevant to the current request.
+   c. If relevant → load that sub-brain's `.brain` files alongside root files.
+   d. Merge context from all relevant sub-brains. On conflict, sub-brain wins
+      for its own scope; root wins for cross-cutting concerns.
 
 9. **Proceed** — Handle the user's request.
 
@@ -291,6 +297,10 @@ ON COMPLETE: delete | promote to Note
 ```
 Entry format: `Frequency | Centrality | Path | Why it matters | Related: #type-title`
 
+**Sub-brain delegation**: If a subdirectory has its own `.pinky/`, list the
+`.pinky/` folder as a single entry (not individual files from that subtree).
+Never list paths matching `*/.pinky/*` or files belonging to a delegated subtree.
+
 ### overview.brain
 ```
 <!-- overview.brain — Project overview and prominent features. -->
@@ -353,6 +363,63 @@ When a project has submodules, vendors, or monorepo packages:
   location for all brain data. When linking a repo, the agent checks for this branch first.
 - Cross-repo knowledge flows through external links
 - `overview.brain` from external sources gives quick context about the linked project
+
+## SUB-BRAINS
+
+Any subdirectory can have its own `.pinky/` folder, creating a **sub-brain** —
+an autonomous data mind scoped to that part of the repo.
+
+### Discovery & Indexing
+
+BOOT step 2 scans for all `**/.pinky/` folders. Each discovered sub-brain is
+registered in SOURCES (step 4) and indexed in the root `files.brain` as a
+folder entry:
+
+```
+F | C | packages/auth/.pinky/ | Sub-brain for auth module | Related: ...
+```
+
+### File Delegation
+
+When a subdirectory has its own `.pinky/`:
+- Files inside that subtree are tracked in the **sub-brain's** `files.brain`, not the root's.
+- The root `files.brain` NEVER lists files whose path passes through a sub-`.pinky/`
+  (i.e. matches `*/.pinky/*`), and NEVER lists files that belong to a subdirectory
+  that owns its own `.pinky/`.
+- Instead, the root `files.brain` links to the `.pinky/` folder itself as a single entry.
+- This keeps each brain focused on its own scope and prevents duplicate tracking.
+
+### Category Loading
+
+When handling a request (BOOT step 8):
+1. Identify all discovered sub-brains from SOURCES.
+2. Read each sub-brain's `overview.brain` to check relevance.
+3. For relevant sub-brains, load their `.brain` files alongside the root's.
+4. Each sub-brain acts as a **category** — its rules, notes, todos, and files
+   apply within its subtree scope.
+5. Root brain provides cross-cutting context; sub-brain wins for scope-local decisions.
+
+### Example Structure
+
+```
+project/
+  pinky.brain
+  .pinky/                    ← root brain (worktree)
+    overview.brain
+    files.brain              ← links to sub-brains, never files inside them
+    ...
+  packages/
+    auth/
+      .pinky/                ← sub-brain for auth
+        overview.brain
+        files.brain          ← tracks auth-specific files
+        ...
+    payments/
+      .pinky/                ← sub-brain for payments
+        overview.brain
+        files.brain          ← tracks payments-specific files
+        ...
+```
 
 ## COMMANDS
 
